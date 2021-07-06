@@ -1,13 +1,16 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import parser from "./parser";
 
 export function activate(context: vscode.ExtensionContext) {
-	console.log('Congratulations, your extension "vue-generator-graph" is now active!');
-
-	let disposable = vscode.commands.registerCommand('vue-generator-graph.helloWorld', () => {
-		vscode.window.showInformationMessage('Hello World from vue-generator-graph!');
-	});
-
-	context.subscriptions.push(disposable);
+  if (vscode.workspace.workspaceFolders) {
+    const folders = vscode.workspace.workspaceFolders;
+    let mainFolder: string = "";
+    mainFolder = folders[0].uri.path;
+    mainFolder = mainFolder.replace(mainFolder[0], "");
+    parser(mainFolder);
+  } else {
+    vscode.window.showErrorMessage("Please open a workspace");
+  }
 }
 
 export function deactivate() {}
