@@ -3,7 +3,7 @@ import * as path from "path";
 import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import * as vscode from "vscode";
-
+import { parse } from "node-html-parser";
 //Find the source folder
 const findSRC: Jtype.findSRCType = (baseURL: string): string => {
   let search = "";
@@ -37,15 +37,20 @@ const extractImports = async (
   directory: string
 ): Promise<readonly lexer.ImportSpecifier[] | undefined> => {
   await lexer.init;
-  const vueCode =
-    fs
-      .readFileSync(directory, {
-        encoding: "utf-8",
-      })
-      .split("<script>")?.[1]
-      ?.trim()
-      ?.split("</script>")[0]
-      .trim() ?? "let none='NoImportWhatADoofus'";
+  if (!fs.existsSync(directory)) return undefined;
+  const sfcCode: string = fs.readFileSync(directory, {
+    encoding: "utf-8",
+  });
+  const vueCode: string =
+    parse(sfcCode, {
+      lowerCaseTagName: false,
+      comment: false,
+      blockTextElements: {
+        script: true,
+      },
+    })
+      ?.querySelector("script")
+      ?.innerText.trim() ?? "const noImportsDoofus='brhhhhhhhhh'";
   const { 0: importStatements } = lexer.parse(vueCode);
   return importStatements.length > 0 ? importStatements : undefined;
 };
@@ -55,32 +60,35 @@ const crawlView = async (
   baseString: string
 ): Promise<Jtype.dependencyGraph | undefined> => {
   const dependencies = await extractImports(baseString);
-  console.log(dependencies);
   const dependencyGraph: Jtype.dependencyGraph = {
     bareImports: [],
     moduleImports: [],
   };
   if (dependencies)
     for (let dependency of dependencies) {
-      let graph: Jtype.dependencyGraph | undefined;
+      let subDependencyGraph: Jtype.dependencyGraph | undefined;
       if (dependency.n) {
-        const dependencyPath = path.join(baseString, dependency.n);
+        const dependencyPath = path.resolve(
+          path.parse(baseString).dir,
+          dependency.n
+        );
+        const name = path.parse(dependencyPath).name;
         if (!dependency.n.includes("/")) {
           dependencyGraph.bareImports.push({
-            name: path.parse(dependencyPath).name,
+            name,
             graph: "none",
           });
         } else {
-          graph = await crawlView(dependencyPath);
-          console.log(graph);
-          if (graph) {
+          //To fix dependency subDependencyGraph stuff
+          subDependencyGraph = await crawlView(dependencyPath);
+          if (subDependencyGraph) {
             dependencyGraph.moduleImports.push({
-              name: path.parse(dependencyPath).name,
-              graph,
+              name,
+              graph: subDependencyGraph,
             });
           } else {
             dependencyGraph.moduleImports.push({
-              name: path.parse(dependencyPath).name,
+              name,
               graph: "none",
             });
           }
@@ -101,9 +109,16 @@ export default async function parser(directory: string) {
     return;
   }
   const views = fs.readdirSync(path.join(src, "views"));
+  const viewGraphs: Array<Jtype.dependencyGraph> = [];
   await lexer.init;
   for (let view of views) {
     console.log(view);
-    console.log(await crawlView(path.join(src, "views", view)));
+    const ast: Jtype.dependencyGraph | undefined = await crawlView(
+      path.join(src, "views", view)
+    );
+    if (ast) {
+      viewGraphs.push(ast);
+    }
   }
+  console.log(viewGraphs);
 }
