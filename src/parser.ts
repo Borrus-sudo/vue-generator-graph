@@ -72,10 +72,10 @@ const crawlView = async (
           path.parse(baseString).dir,
           dependency.n
         );
-        const name = path.parse(dependencyPath).name;
+        const { name, ext } = path.parse(dependencyPath);
         if (!dependency.n.includes("/")) {
           dependencyGraph.bareImports.push({
-            name,
+            name: name + ext,
             graph: "none",
           });
         } else {
@@ -83,12 +83,12 @@ const crawlView = async (
           subDependencyGraph = await crawlView(dependencyPath);
           if (subDependencyGraph) {
             dependencyGraph.moduleImports.push({
-              name,
+              name: name + ext,
               graph: subDependencyGraph,
             });
           } else {
             dependencyGraph.moduleImports.push({
-              name,
+              name: name + ext,
               graph: "none",
             });
           }
