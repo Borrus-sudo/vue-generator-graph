@@ -129,7 +129,7 @@ export default async function parser(directory: string) {
   for (let view of views) {
     console.log(view);
     const ast: Jtype.dependencyGraph | undefined = await crawlView(
-      path.join(src, "views", view)
+      path.join(slug, view)
     );
     if (ast) {
       viewGraphs.push(ast);
