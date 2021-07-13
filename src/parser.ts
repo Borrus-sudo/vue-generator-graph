@@ -4,7 +4,9 @@ import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import * as vscode from "vscode";
 import { parse } from "node-html-parser";
+
 //Find the source folder
+let rootSRC: string = "";
 const findSRC: Jtype.findSRCType = (baseURL: string): string => {
   let search = "";
   let continueSearch = true;
@@ -68,18 +70,25 @@ const crawlView = async (
     for (let dependency of dependencies) {
       let subDependencyGraph: Jtype.dependencyGraph | undefined;
       if (dependency.n) {
-        const dependencyPath = path.resolve(
-          path.parse(baseString).dir,
-          dependency.n
-        );
+        const dependencyPath = !dependency.n.startsWith("@")
+          ? path.resolve(path.parse(baseString).dir, dependency.n)
+          : dependency.n
+              .split(path.sep)
+              .map((char) => (char === "@" ? rootSRC : char))
+              .join(path.delimiter);
         const { name, ext } = path.parse(dependencyPath);
-        if (!dependency.n.includes("/")) {
+        if (
+          !(
+            dependency.n.startsWith("./") ||
+            dependency.n.startsWith("../") ||
+            dependency.n.startsWith("@/")
+          )
+        ) {
           dependencyGraph.bareImports.push({
             name: name + ext,
             graph: "none",
           });
         } else {
-          //To fix dependency subDependencyGraph stuff
           subDependencyGraph = await crawlView(dependencyPath);
           if (subDependencyGraph) {
             dependencyGraph.moduleImports.push({
@@ -104,11 +113,17 @@ const crawlView = async (
 //Function to put all the pieces together
 export default async function parser(directory: string) {
   let src: string = findSRC(directory);
+  rootSRC = src;
   if (src === "404") {
     vscode.window.showErrorMessage("SRC directory not found.");
     return;
   }
-  const views = fs.readdirSync(path.join(src, "views"));
+  const slug = fs.existsSync(path.join(src, "views"))
+    ? path.join(src, "views")
+    : fs.existsSync(path.join(src, "pages"))
+    ? path.join(src, "pages")
+    : "";
+  const views = fs.readdirSync(slug);
   const viewGraphs: Array<Jtype.dependencyGraph> = [];
   await lexer.init;
   for (let view of views) {
