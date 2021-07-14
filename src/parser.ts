@@ -58,56 +58,70 @@ const extractImports = async (
 };
 
 //Get the imports from a file and crawl it to get imports and form a dependency graph of the view
-const crawlView = async (
-  baseString: string
-): Promise<Jtype.dependencyGraph | undefined> => {
-  const dependencies = await extractImports(baseString);
-  const dependencyGraph: Jtype.dependencyGraph = {
-    bareImports: [],
-    moduleImports: [],
-  };
-  if (dependencies)
-    for (let dependency of dependencies) {
-      let subDependencyGraph: Jtype.dependencyGraph | undefined;
-      if (dependency.n) {
-        const dependencyPath = !dependency.n.startsWith("@")
-          ? path.resolve(path.parse(baseString).dir, dependency.n)
-          : dependency.n
-              .split(path.sep)
-              .map((char) => (char === "@" ? rootSRC : char))
-              .join(path.delimiter);
-        const { name, ext } = path.parse(dependencyPath);
-        if (
-          !(
-            dependency.n.startsWith("./") ||
-            dependency.n.startsWith("../") ||
-            dependency.n.startsWith("@/")
-          )
-        ) {
-          dependencyGraph.bareImports.push({
-            name: name + ext,
-            graph: "none",
-          });
-        } else {
-          subDependencyGraph = await crawlView(dependencyPath);
-          if (subDependencyGraph) {
-            dependencyGraph.moduleImports.push({
-              name: name + ext,
-              graph: subDependencyGraph,
-            });
-          } else {
-            dependencyGraph.moduleImports.push({
-              name: name + ext,
-              graph: "none",
-            });
+const crawlViewDecorator = (): Function => {
+  const returnMapper = new Map();
+  const crawlView = async (
+    baseString: string
+  ): Promise<Jtype.dependencyGraph | undefined> => {
+    console.log(returnMapper);
+
+    if (returnMapper.get(baseString)) {
+      console.log("Returned cached");
+      console.log(returnMapper);
+      return returnMapper.get(baseString);
+    } else {
+      const dependencies = await extractImports(baseString);
+      const dependencyGraph: Jtype.dependencyGraph = {
+        bareImports: [],
+        moduleImports: [],
+      };
+      if (dependencies)
+        for (let dependency of dependencies) {
+          let subDependencyGraph: Jtype.dependencyGraph | undefined;
+          if (dependency.n) {
+            const dependencyPath = !dependency.n.startsWith("@")
+              ? path.resolve(path.parse(baseString).dir, dependency.n)
+              : dependency.n
+                  .split("/")
+                  .map((char) => (char === "@" ? rootSRC : char))
+                  .join(path.sep);
+            const { name, ext } = path.parse(dependencyPath);
+            if (
+              !(
+                dependency.n.startsWith("./") ||
+                dependency.n.startsWith("../") ||
+                dependency.n.startsWith("@/")
+              )
+            ) {
+              dependencyGraph.bareImports.push({
+                name: name + ext,
+                graph: "none",
+              });
+            } else {
+              subDependencyGraph = await crawlView(dependencyPath);
+              if (subDependencyGraph) {
+                dependencyGraph.moduleImports.push({
+                  name: name + ext,
+                  graph: subDependencyGraph,
+                });
+              } else {
+                dependencyGraph.moduleImports.push({
+                  name: name + ext,
+                  graph: "none",
+                });
+              }
+            }
           }
         }
+      else {
+        returnMapper.set(baseString, "none");
+        return undefined;
       }
+      returnMapper.set(baseString, dependencyGraph);
+      return dependencyGraph;
     }
-  else {
-    return undefined;
-  }
-  return dependencyGraph;
+  };
+  return crawlView;
 };
 
 //Function to put all the pieces together
@@ -126,9 +140,10 @@ export default async function parser(directory: string) {
   const views = fs.readdirSync(slug);
   const viewGraphs: Array<Jtype.dependencyGraph> = [];
   await lexer.init;
+  const crawler = crawlViewDecorator();
   for (let view of views) {
     console.log(view);
-    const ast: Jtype.dependencyGraph | undefined = await crawlView(
+    const ast: Jtype.dependencyGraph | undefined = await crawler(
       path.join(slug, view)
     );
     if (ast) {
