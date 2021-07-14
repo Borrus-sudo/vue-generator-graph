@@ -60,14 +60,11 @@ const extractImports = async (
 //Get the imports from a file and crawl it to get imports and form a dependency graph of the view
 const crawlViewDecorator = (): Function => {
   const returnMapper = new Map();
+  const trail: string[] = [];
   const crawlView = async (
     baseString: string
   ): Promise<Jtype.dependencyGraph | undefined> => {
-    console.log(returnMapper);
-
     if (returnMapper.get(baseString)) {
-      console.log("Returned cached");
-      console.log(returnMapper);
       return returnMapper.get(baseString);
     } else {
       const dependencies = await extractImports(baseString);
@@ -75,12 +72,20 @@ const crawlViewDecorator = (): Function => {
         bareImports: [],
         moduleImports: [],
       };
-      if (dependencies)
+      const {
+        name: payloadName,
+        ext: payloadExt,
+        dir: payloadDir,
+      } = path.parse(baseString);
+      trail.push(payloadName + payloadExt);
+      if (dependencies) {
         for (let dependency of dependencies) {
+          trail.splice(trail.indexOf(payloadName + payloadExt) + 1);
+          console.log(trail);
           let subDependencyGraph: Jtype.dependencyGraph | undefined;
           if (dependency.n) {
             const dependencyPath = !dependency.n.startsWith("@")
-              ? path.resolve(path.parse(baseString).dir, dependency.n)
+              ? path.resolve(payloadDir, dependency.n)
               : dependency.n
                   .split("/")
                   .map((char) => (char === "@" ? rootSRC : char))
@@ -98,22 +103,29 @@ const crawlViewDecorator = (): Function => {
                 graph: "none",
               });
             } else {
-              subDependencyGraph = await crawlView(dependencyPath);
-              if (subDependencyGraph) {
-                dependencyGraph.moduleImports.push({
-                  name: name + ext,
-                  graph: subDependencyGraph,
-                });
+              if (!trail.includes(name + ext)) {
+                subDependencyGraph = await crawlView(dependencyPath);
+                if (subDependencyGraph) {
+                  dependencyGraph.moduleImports.push({
+                    name: name + ext,
+                    graph: subDependencyGraph,
+                  });
+                } else {
+                  dependencyGraph.moduleImports.push({
+                    name: name + ext,
+                    graph: "none",
+                  });
+                }
               } else {
                 dependencyGraph.moduleImports.push({
                   name: name + ext,
-                  graph: "none",
+                  graph: { circularReference: "" },
                 });
               }
             }
           }
         }
-      else {
+      } else {
         returnMapper.set(baseString, "none");
         return undefined;
       }
