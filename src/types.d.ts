@@ -4,6 +4,6 @@ export type dependencyGraph = {
   moduleImports: Array<
     | { name: string; graph: dependencyGraph }
     | { name: string; graph: "none" }
-    | { name: string; graph: { circularReference: string;}}
+    | { name: string; graph: "circularReference"}
   >;
 };

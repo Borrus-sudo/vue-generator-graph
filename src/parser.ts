@@ -58,7 +58,7 @@ const extractImports = async (
 };
 
 //Get the imports from a file and crawl it to get imports and form a dependency graph of the view
-const crawlViewDecorator = (): Function => {
+const crawlViewDecorator = (): [Function,Function ]=> {
   const cache = new Map();
   const trail: string[] = [];
   const crawlView = async (
@@ -119,7 +119,7 @@ const crawlViewDecorator = (): Function => {
               } else {
                 dependencyGraph.moduleImports.push({
                   name: name + ext,
-                  graph: { circularReference: "" },
+                  graph: "circularReference",
                 });
               }
             }
@@ -129,11 +129,13 @@ const crawlViewDecorator = (): Function => {
         cache.set(baseString, "none");
         return undefined;
       }
-      cache.set(baseString, dependencyGraph);
       return dependencyGraph;
     }
   };
-  return crawlView;
+  const resetTrail = () => {
+    trail.splice(0,trail.length);
+  }
+  return [crawlView, resetTrail];
 };
 
 //Function to put all the pieces together
@@ -152,7 +154,7 @@ export default async function parser(directory: string) {
   const views = fs.readdirSync(slug);
   const viewGraphs: Array<Jtype.dependencyGraph> = [];
   await lexer.init;
-  const crawler = crawlViewDecorator();
+  const [crawler,resetTrail] = crawlViewDecorator();
   for (let view of views) {
     console.log(view);
     const ast: Jtype.dependencyGraph | undefined = await crawler(
@@ -161,6 +163,7 @@ export default async function parser(directory: string) {
     if (ast) {
       viewGraphs.push(ast);
     }
+    resetTrail();
   }
   console.log(viewGraphs);
 }
