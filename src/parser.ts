@@ -59,13 +59,13 @@ const extractImports = async (
 
 //Get the imports from a file and crawl it to get imports and form a dependency graph of the view
 const crawlViewDecorator = (): Function => {
-  const returnMapper = new Map();
+  const cache = new Map();
   const trail: string[] = [];
   const crawlView = async (
     baseString: string
   ): Promise<Jtype.dependencyGraph | undefined> => {
-    if (returnMapper.get(baseString)) {
-      return returnMapper.get(baseString);
+    if (cache.get(baseString)) {
+      return cache.get(baseString);
     } else {
       const dependencies = await extractImports(baseString);
       const dependencyGraph: Jtype.dependencyGraph = {
@@ -126,10 +126,10 @@ const crawlViewDecorator = (): Function => {
           }
         }
       } else {
-        returnMapper.set(baseString, "none");
+        cache.set(baseString, "none");
         return undefined;
       }
-      returnMapper.set(baseString, dependencyGraph);
+      cache.set(baseString, dependencyGraph);
       return dependencyGraph;
     }
   };
