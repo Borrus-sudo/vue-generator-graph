@@ -12,12 +12,12 @@
     "activationEvents": [
         "onCommand:visualize.start"
     ],
-    "main": "./out/src/extension.js",
+    "main": "./out/extension.js",
     "contributes": {
         "commands": [{
             "command": "visualize.start",
-            "title": "Start new cat coding session",
-            "category": "Cat Coding"
+            "title": "Vizualize your vue app 😉",
+            "category": "Vizualizer"
         }]
     },
     "scripts": {
