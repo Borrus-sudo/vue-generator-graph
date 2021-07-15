@@ -2,7 +2,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
-import * as vscode from "vscode";
 import { parse } from "node-html-parser";
 
 //Find the source folder
@@ -33,7 +32,21 @@ const findSRC: Jtype.findSRCType = (baseURL: string): string => {
   if (search) return search;
   else return "404";
 };
-
+const pathResolve = (dir: string): string => {
+  const mainDetails = path.parse(dir);
+  let result: string = "";
+  if (!mainDetails.ext && fs.existsSync(mainDetails.dir)) {
+    const contents = fs.readdirSync(mainDetails.dir);
+    for (let content of contents) {
+      const contentDetails = path.parse(path.join(mainDetails.dir, content));
+      if (contentDetails.name === mainDetails.name) {
+        result = dir + contentDetails.ext;
+      }
+    }
+  }
+  result = result ? result : dir;
+  return result;
+};
 //Return an array of import statements or undefined if there are none
 const extractImports = async (
   directory: string
@@ -58,7 +71,7 @@ const extractImports = async (
 };
 
 //Get the imports from a file and crawl it to get imports and form a dependency graph of the view
-const crawlViewDecorator = (): [Function,Function ]=> {
+const crawlViewDecorator = (): [Function, Function] => {
   const cache = new Map();
   const trail: string[] = [];
   const crawlView = async (
@@ -84,12 +97,14 @@ const crawlViewDecorator = (): [Function,Function ]=> {
           console.log(trail);
           let subDependencyGraph: Jtype.dependencyGraph | undefined;
           if (dependency.n) {
-            const dependencyPath = !dependency.n.startsWith("@")
-              ? path.resolve(payloadDir, dependency.n)
-              : dependency.n
-                  .split("/")
-                  .map((char) => (char === "@" ? rootSRC : char))
-                  .join(path.sep);
+            const dependencyPath = pathResolve(
+              !dependency.n.startsWith("@")
+                ? path.resolve(payloadDir, dependency.n)
+                : dependency.n
+                    .split("/")
+                    .map((char) => (char === "@" ? rootSRC : char))
+                    .join(path.sep)
+            );
             const { name, ext } = path.parse(dependencyPath);
             if (
               !(
@@ -133,17 +148,18 @@ const crawlViewDecorator = (): [Function,Function ]=> {
     }
   };
   const resetTrail = () => {
-    trail.splice(0,trail.length);
-  }
+    trail.splice(0, trail.length);
+  };
   return [crawlView, resetTrail];
 };
 
 //Function to put all the pieces together
-export default async function parser(directory: string) {
+export default async function parser(
+  directory: string
+): Promise<Jtype.dependencyGraph[] | undefined> {
   let src: string = findSRC(directory);
   rootSRC = src;
   if (src === "404") {
-    vscode.window.showErrorMessage("SRC directory not found.");
     return;
   }
   const slug = fs.existsSync(path.join(src, "views"))
@@ -154,7 +170,7 @@ export default async function parser(directory: string) {
   const views = fs.readdirSync(slug);
   const viewGraphs: Array<Jtype.dependencyGraph> = [];
   await lexer.init;
-  const [crawler,resetTrail] = crawlViewDecorator();
+  const [crawler, resetTrail] = crawlViewDecorator();
   for (let view of views) {
     console.log(view);
     const ast: Jtype.dependencyGraph | undefined = await crawler(
@@ -166,4 +182,5 @@ export default async function parser(directory: string) {
     resetTrail();
   }
   console.log(viewGraphs);
+  return viewGraphs;
 }
