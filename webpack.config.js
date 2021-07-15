@@ -36,7 +36,7 @@ const config = {
                 test: /\.html$/i,
                 loader: "html-loader",
                 options: {
-                    esModule: false,
+                    minimize: true,
                 },
             },
         ],

@@ -8,27 +8,25 @@ import { parse } from "node-html-parser";
 let rootSRC: string = "";
 const findSRC: Jtype.findSRCType = (baseURL: string): string => {
   let search = "";
-  let continueSearch = true;
   const directories = fs
     .readdirSync(baseURL)
     .filter((elem) => !elem.startsWith("."));
-  directories.forEach((directory) => {
-    if (continueSearch) {
-      if (fs.statSync(path.join(baseURL, directory)).isDirectory()) {
-        if (directory !== "node_modules")
-          if (directory === "src") {
-            search = path.join(baseURL, directory);
-            continueSearch = false;
-          } else {
-            const isSRC: string = findSRC(path.join(baseURL, directory));
-            if (isSRC !== "404") {
-              search = isSRC;
-              continueSearch = false;
-            }
+  loop: for (let directory of directories) {
+    if (fs.statSync(path.join(baseURL, directory)).isDirectory()) {
+      if (directory !== "node_modules")
+        if (directory === "src") {
+          search = path.join(baseURL, directory);
+          break loop;
+        } else {
+          const isSRC: string = findSRC(path.join(baseURL, directory));
+          if (isSRC !== "404") {
+            search = isSRC;
+            break loop;
           }
-      }
+        }
     }
-  });
+  }
+
   if (search) return search;
   else return "404";
 };
