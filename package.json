@@ -10,10 +10,16 @@
         "Other"
     ],
     "activationEvents": [
-        "onStartupFinished"
+        "onCommand:visualize.start"
     ],
-    "main": "./out/extension.js",
-    "contributes": {},
+    "main": "./out/src/extension.js",
+    "contributes": {
+        "commands": [{
+            "command": "visualize.start",
+            "title": "Start new cat coding session",
+            "category": "Cat Coding"
+        }]
+    },
     "scripts": {
         "vscode:prepublish": "npm run compile",
         "compile": "tsc -p ./",
