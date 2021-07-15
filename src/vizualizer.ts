@@ -1,20 +1,12 @@
 import { dependencyGraph } from "./types";
-
+/*@ts-ignore */
+import html from "./web/index.html";
 export default async function visualize(
   viewGraphs: Array<dependencyGraph>
 ): Promise<string> {
   for (const viewGraph of viewGraphs) {
     console.log(viewGraph);
   }
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cat Coding</title>
-</head>
-<body>
-    <img src="https://media.giphy.com/media/JIX9t2j0ZTN9S/giphy.gif" width="300" />
-</body>
-</html>`;
+  // const htmlCode: string = fs.readFileSync("./webview/index.html", { encoding: "utf-8" });
+  return html;
 }
