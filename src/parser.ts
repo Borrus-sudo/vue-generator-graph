@@ -63,7 +63,7 @@ const extractImports = async (
       },
     })
       ?.querySelector("script")
-      ?.innerText.trim() ?? "const noImportsDoofus='brhhhhhhhhh'";
+      ?.innerText.trim() ?? sfcCode;
   const { 0: importStatements } = lexer.parse(vueCode);
   return importStatements.length > 0 ? importStatements : undefined;
 };
@@ -180,5 +180,7 @@ export default async function parser(
     }
     resetTrail();
   }
+  console.log(viewGraphs);
+
   return viewGraphs;
 }

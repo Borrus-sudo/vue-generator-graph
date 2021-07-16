@@ -22,7 +22,7 @@ const createGraphs = (
   const mds: string[] = [];
   for (const viewGraph of viewGraphs) {
     const mermaidMD = `graph TD \n` + createNodeGraph(viewGraph);
-    mds.push(mermaidMD);
+    mermaidMD != `graph TD \n` ? mds.push(mermaidMD) : 0;
   }
   return mds;
 };
