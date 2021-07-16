@@ -1,6 +1,6 @@
 //@ts-nocheck
 import { Uri } from "vscode";
-export default function getWebviewContent(src1: Uri, src2: Uri): string {
+export default function getWebviewContent(src: Uri): string {
   return `
  <!DOCTYPE html>
 <html lang="en">
@@ -29,8 +29,7 @@ section Another
 Task in sec      :2014-01-12  , 12d
 another task      : 24d
   </pre>
-<script src=${src1}></script>
-<script src=${src2}></script>
+<script src=${src}></script>
 
 
 </body>

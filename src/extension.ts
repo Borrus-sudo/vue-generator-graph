@@ -32,18 +32,12 @@ export async function activate(context: vscode.ExtensionContext) {
           vscode.window.showErrorMessage("SRC directory not found.");
           return;
         }
-        const onDiskMermaidPath = vscode.Uri.file(
-          path.join(context.extensionPath, "src", "web", "mermaid.js")
-        );
-        const onDiskIndexFile = vscode.Uri.file(
-          path.join(context.extensionPath, "src", "web", "index.js")
+        const onDiskFilePath = vscode.Uri.file(
+          path.join(context.extensionPath, "dist", "index.js")
         );
         const builtFile: vscode.Uri =
-          panel.webview.asWebviewUri(onDiskMermaidPath);
-        const builtIndexFile: vscode.Uri =
-          panel.webview.asWebviewUri(onDiskIndexFile);
-
-        panel.webview.html = getWebviewContent(builtFile, builtIndexFile);
+          panel.webview.asWebviewUri(onDiskFilePath);
+        panel.webview.html = getWebviewContent(builtFile);
         console.log(visualize(viewGraphs));
       } else {
         vscode.window.showErrorMessage("Please open a workspace");
