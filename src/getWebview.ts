@@ -17,8 +17,9 @@ export default function getWebviewContent(src: Uri, scripts: string[]): string {
 </head>
 
 <body >
-    <h1 style="text-align:center;">Graph 📊</h1>
-   
+    <h1>Graph 📊</h1>
+   <br>
+   <br>
 ${scriptsInHTML}
  
     

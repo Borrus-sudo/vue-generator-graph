@@ -149,7 +149,6 @@ const crawlViewDecorator = (): [Function, Function] => {
   };
   return [crawlView, resetTrail];
 };
-
 //Function to put all the pieces together
 export default async function parser(
   directory: string
