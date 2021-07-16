@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
+import * as path from "path";
 import parser from "./parser";
 import visualize from "./vizualizer";
 import getWebviewContent from "./getWebview";
 import { dependencyGraph } from "./types";
-import * as path from "path";
 export async function activate(context: vscode.ExtensionContext) {
   let panel: vscode.WebviewPanel | undefined = undefined;
   context.subscriptions.push(
@@ -37,8 +37,10 @@ export async function activate(context: vscode.ExtensionContext) {
         );
         const builtFile: vscode.Uri =
           panel.webview.asWebviewUri(onDiskFilePath);
-        panel.webview.html = getWebviewContent(builtFile);
-        console.log(visualize(viewGraphs));
+        panel.webview.html = getWebviewContent(
+          builtFile,
+          visualize(viewGraphs)
+        );
       } else {
         vscode.window.showErrorMessage("Please open a workspace");
       }
