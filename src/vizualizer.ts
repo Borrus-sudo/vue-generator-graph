@@ -1,14 +1,11 @@
 import { dependencyGraph } from "./types";
-/*@ts-ignore */
-// import * as html from "./web/index.html";
 
 const createGraphs = (
   viewGraphs: Array<{
     name: string;
     graph: dependencyGraph;
   }>
-): string => {
-  const cache = new Map();
+): string[] => {
   const createNodeGraph = (node: {
     name: string;
     graph: dependencyGraph | "none" | "circularReference";
@@ -22,19 +19,18 @@ const createGraphs = (
     }
     return currentScript;
   };
+  const mds: string[] = [];
   for (const viewGraph of viewGraphs) {
     const mermaidMD = `graph TD \n` + createNodeGraph(viewGraph);
-    console.log(mermaidMD);
+    mds.push(mermaidMD);
   }
-  return "";
+  return mds;
 };
 export default function visualize(
   viewGraphs: Array<{
     name: string;
     graph: dependencyGraph;
   }>
-): string {
-  createGraphs(viewGraphs);
-  // console.log(html);
-  return `<h1>Hello World</h1>`;
+): string[] {
+  return createGraphs(viewGraphs);
 }

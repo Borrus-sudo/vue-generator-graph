@@ -1,17 +1,22 @@
 import * as vscode from "vscode";
 import parser from "./parser";
 import visualize from "./vizualizer";
+import getWebviewContent from "./getWebview";
 import { dependencyGraph } from "./types";
+import * as path from "path";
 export async function activate(context: vscode.ExtensionContext) {
+  let panel: vscode.WebviewPanel | undefined = undefined;
   context.subscriptions.push(
     vscode.commands.registerCommand("visualize.start", async () => {
       // Create and show a new webview
-      const panel = vscode.window.createWebviewPanel(
-        "visualize",
-        "Generator Graph",
-        vscode.ViewColumn.One,
-        { enableScripts: true }
-      );
+      if (!panel) {
+        panel = vscode.window.createWebviewPanel(
+          "visualize",
+          "Generator Graph",
+          vscode.ViewColumn.One,
+          { enableScripts: true }
+        );
+      }
       if (vscode.workspace.workspaceFolders) {
         const folders = vscode.workspace.workspaceFolders;
         let mainFolder: string = "";
@@ -27,7 +32,19 @@ export async function activate(context: vscode.ExtensionContext) {
           vscode.window.showErrorMessage("SRC directory not found.");
           return;
         }
-        panel.webview.html = await visualize(viewGraphs);
+        const onDiskMermaidPath = vscode.Uri.file(
+          path.join(context.extensionPath, "src", "web", "mermaid.js")
+        );
+        const onDiskIndexFile = vscode.Uri.file(
+          path.join(context.extensionPath, "src", "web", "index.js")
+        );
+        const builtFile: vscode.Uri =
+          panel.webview.asWebviewUri(onDiskMermaidPath);
+        const builtIndexFile: vscode.Uri =
+          panel.webview.asWebviewUri(onDiskIndexFile);
+
+        panel.webview.html = getWebviewContent(builtFile, builtIndexFile);
+        console.log(visualize(viewGraphs));
       } else {
         vscode.window.showErrorMessage("Please open a workspace");
       }
