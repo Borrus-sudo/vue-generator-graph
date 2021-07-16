@@ -14,11 +14,13 @@
     ],
     "main": "./dist/extension.js",
     "contributes": {
-        "commands": [{
-            "command": "visualize.start",
-            "title": "Vizualize your vue app 😉",
-            "category": "Vizualizer"
-        }]
+        "commands": [
+            {
+                "command": "visualize.start",
+                "title": "Vizualize your vue app 😉",
+                "category": "Vizualizer"
+            }
+        ]
     },
     "scripts": {
         "vscode:prepublish": "npm run package",
@@ -50,6 +52,7 @@
     },
     "dependencies": {
         "es-module-lexer": "^0.6.0",
+        "mermaid": "^8.11.0",
         "node-html-parser": "^4.0.0"
     }
 }

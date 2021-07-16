@@ -9,5 +9,5 @@ export default async function visualize(
   }
   console.log(html);
 
-  return html;
+  return html.default;
 }
