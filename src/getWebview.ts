@@ -1,6 +1,10 @@
-//@ts-nocheck
 import { Uri } from "vscode";
 export default function getWebviewContent(src: Uri, scripts: string[]): string {
+  let scriptsInHTML="";
+  for (let script of scripts) {
+    scriptsInHTML += "\n";
+    scriptsInHTML += `<pre class="mermaid">${script}</pre>`;
+  }
   return `
  <!DOCTYPE html>
 <html lang="en">
@@ -13,10 +17,10 @@ export default function getWebviewContent(src: Uri, scripts: string[]): string {
 </head>
 
 <body>
-    <h1>Hello World</h1>
-    <pre class="mermaid">
-${scripts[0]}
-  </pre>
+    <h1 style="text-align:center;">Graph 📊:</h1>
+   
+${scriptsInHTML}
+ 
     
 <script src=${src}></script>
 
