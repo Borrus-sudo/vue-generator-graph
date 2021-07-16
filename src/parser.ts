@@ -92,7 +92,6 @@ const crawlViewDecorator = (): [Function, Function] => {
       if (dependencies) {
         for (let dependency of dependencies) {
           trail.splice(trail.indexOf(payloadName + payloadExt) + 1);
-          console.log(trail);
           let subDependencyGraph: Jtype.dependencyGraph | undefined;
           if (dependency.n) {
             const dependencyPath = pathResolve(
@@ -173,7 +172,6 @@ export default async function parser(
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
   for (let view of views) {
-    console.log(view);
     const ast: Jtype.dependencyGraph | undefined = await crawler(
       path.join(slug, view)
     );
@@ -182,6 +180,5 @@ export default async function parser(
     }
     resetTrail();
   }
-  console.log(viewGraphs);
   return viewGraphs;
 }
