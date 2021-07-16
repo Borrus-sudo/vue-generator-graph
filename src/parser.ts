@@ -154,7 +154,7 @@ const crawlViewDecorator = (): [Function, Function] => {
 //Function to put all the pieces together
 export default async function parser(
   directory: string
-): Promise<Jtype.dependencyGraph[] | undefined> {
+): Promise<{ name: string; graph: Jtype.dependencyGraph }[] | undefined> {
   let src: string = findSRC(directory);
   rootSRC = src;
   if (src === "404") {
@@ -166,7 +166,10 @@ export default async function parser(
     ? path.join(src, "pages")
     : "";
   const views = fs.readdirSync(slug);
-  const viewGraphs: Array<Jtype.dependencyGraph> = [];
+  const viewGraphs: Array<{
+    name: string;
+    graph: Jtype.dependencyGraph;
+  }> = [];
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
   for (let view of views) {
@@ -175,7 +178,7 @@ export default async function parser(
       path.join(slug, view)
     );
     if (ast) {
-      viewGraphs.push(ast);
+      viewGraphs.push({ name: view, graph: ast });
     }
     resetTrail();
   }

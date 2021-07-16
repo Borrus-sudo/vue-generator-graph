@@ -17,9 +17,12 @@ export async function activate(context: vscode.ExtensionContext) {
         let mainFolder: string = "";
         mainFolder = folders[0].uri.path;
         mainFolder = mainFolder.replace(mainFolder[0], "");
-        const viewGraphs: Array<dependencyGraph> | undefined = await parser(
-          mainFolder
-        );
+        const viewGraphs:
+          | Array<{
+              name: string;
+              graph: dependencyGraph;
+            }>
+          | undefined = await parser(mainFolder);
         if (!viewGraphs) {
           vscode.window.showErrorMessage("SRC directory not found.");
           return;
