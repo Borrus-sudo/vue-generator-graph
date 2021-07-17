@@ -179,7 +179,6 @@ export default async function parser(
     }
     resetTrail();
   }
-  console.log(viewGraphs);
 
   return viewGraphs;
 }

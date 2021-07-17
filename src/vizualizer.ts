@@ -13,13 +13,12 @@ const createGraphs = (
     let currentScript = ``;
     if (node.graph != "circularReference" && node.graph != "none") {
       for (let module of node.graph.moduleImports) {
+        currentScript += `\t ${node.name}-->${module.name} \n`;
         currentScript += createNodeGraph(module);
-        currentScript += `\t ${node.name}[${
-          node.name
-        }<br>${node.graph.bareImports
-          .map((elem) => elem.name)
-          .join("<br>")}]-->${module.name} \n`;
       }
+      currentScript += `\t ${node.name}[${node.name}<br>${node.graph.bareImports
+        .map((elem) => elem.name)
+        .join("<br>")}] \n`;
     }
     return currentScript;
   };
