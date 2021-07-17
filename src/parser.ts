@@ -54,17 +54,22 @@ const extractImports = async (
   const sfcCode: string = fs.readFileSync(directory, {
     encoding: "utf-8",
   });
+  const ext = path.parse(directory).ext;
+  const code = parse(sfcCode, {
+    lowerCaseTagName: false,
+    comment: false,
+    blockTextElements: {
+      script: true,
+    },
+  })
+    ?.querySelector("script")
+    ?.innerText.trim();
+
   const vueCode: string =
-    parse(sfcCode, {
-      lowerCaseTagName: false,
-      comment: false,
-      blockTextElements: {
-        script: true,
-      },
-    })
-      ?.querySelector("script")
-      ?.innerText.trim() ?? sfcCode;
+    code ||
+    (ext === ".js" || ext === ".ts" ? sfcCode : "const noImports='doofus'");
   const { 0: importStatements } = lexer.parse(vueCode);
+
   return importStatements.length > 0 ? importStatements : undefined;
 };
 
@@ -79,6 +84,7 @@ const crawlViewDecorator = (): [Function, Function] => {
       return cache.get(baseString);
     } else {
       const dependencies = await extractImports(baseString);
+
       const dependencyGraph: Jtype.dependencyGraph = {
         bareImports: [],
         moduleImports: [],
@@ -145,11 +151,24 @@ const crawlViewDecorator = (): [Function, Function] => {
     }
   };
   const resetTrail = () => {
-    trail.splice(0, trail.length);
+    if (trail.length > 0) trail.splice(0, trail.length);
   };
   return [crawlView, resetTrail];
 };
 //Function to put all the pieces together
+const flattenDirectory = (dir: string): string[] => {
+  const contents: string[] = fs.readdirSync(dir);
+  const result: string[] = [];
+  for (let content of contents) {
+    const contentPath = path.join(dir, content);
+    if (fs.statSync(contentPath).isFile()) {
+      result.push(contentPath);
+    } else {
+      result.push(...flattenDirectory(contentPath));
+    }
+  }
+  return result;
+};
 export default async function parser(
   directory: string
 ): Promise<{ name: string; graph: Jtype.dependencyGraph }[] | undefined> {
@@ -163,7 +182,9 @@ export default async function parser(
     : fs.existsSync(path.join(src, "pages"))
     ? path.join(src, "pages")
     : "";
-  const views = fs.readdirSync(slug);
+
+  const views = flattenDirectory(slug);
+
   const viewGraphs: Array<{
     name: string;
     graph: Jtype.dependencyGraph;
@@ -171,14 +192,17 @@ export default async function parser(
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
   for (let view of views) {
-    const ast: Jtype.dependencyGraph | undefined = await crawler(
-      path.join(slug, view)
-    );
+    const ast: Jtype.dependencyGraph | undefined = await crawler(view);
+
     if (ast) {
-      viewGraphs.push({ name: view, graph: ast });
+      viewGraphs.push({
+        name: view.split(slug + "\\")[1],
+        graph: ast,
+      });
     }
     resetTrail();
   }
+  console.log(viewGraphs);
 
   return viewGraphs;
 }

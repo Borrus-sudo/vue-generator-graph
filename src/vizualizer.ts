@@ -27,6 +27,8 @@ const createGraphs = (
     const mermaidMD = `graph TD \n` + createNodeGraph(viewGraph);
     mermaidMD != `graph TD \n` ? mds.push(mermaidMD) : 0;
   }
+  console.log(mds);
+
   return mds;
 };
 export default function visualize(
