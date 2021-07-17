@@ -25,7 +25,9 @@ const createGraphs = (
   const mds: string[] = [];
   for (const viewGraph of viewGraphs) {
     const mermaidMD = `graph TD \n` + createNodeGraph(viewGraph);
-    mermaidMD != `graph TD \n` ? mds.push(mermaidMD) : 0;
+    mermaidMD != `graph TD \n`
+      ? mds.push(mermaidMD)
+      : mds.push(mermaidMD + `\t ${viewGraph.name}`);
   }
   console.log(mds);
 

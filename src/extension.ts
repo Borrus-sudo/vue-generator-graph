@@ -9,14 +9,12 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("visualize.start", async () => {
       // Create and show a new webview
-      if (!panel) {
-        panel = vscode.window.createWebviewPanel(
-          "visualize",
-          "Generator Graph",
-          vscode.ViewColumn.One,
-          { enableScripts: true }
-        );
-      }
+      panel = vscode.window.createWebviewPanel(
+        "visualize",
+        "Generator Graph",
+        vscode.ViewColumn.One,
+        { enableScripts: true }
+      );
       if (vscode.workspace.workspaceFolders) {
         const folders = vscode.workspace.workspaceFolders;
         let mainFolder: string = "";
