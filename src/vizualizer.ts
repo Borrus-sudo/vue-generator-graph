@@ -16,16 +16,16 @@ const createGraphs = (
         currentScript += `\t ${node.name}-->${module.name} \n`;
         currentScript += createNodeGraph(module);
       }
-      currentScript += `\t ${node.name}[${node.name}<br>${node.graph.bareImports
-        .map((elem) => elem.name)
-        .join("<br>")}] \n`;
+      currentScript += `\t ${node.name}[${node.name}<br> ${
+        node.name != "App.vue" ? "<u>BareImports</u> <br>" : "<u>Plugins</u> <br>"
+      }${node.graph.bareImports.map((elem) => elem.name).join("<br>")}] \n`;
     }
     return currentScript;
   };
   const mds: string[] = [];
   for (const viewGraph of viewGraphs) {
-    const mermaidMD = `graph TD \n` + createNodeGraph(viewGraph);
-    mermaidMD != `graph TD \n`
+    const mermaidMD = `graph LR \n` + createNodeGraph(viewGraph);
+    mermaidMD != `graph LR \n`
       ? mds.push(mermaidMD)
       : mds.push(mermaidMD + `\t ${viewGraph.name}`);
   }

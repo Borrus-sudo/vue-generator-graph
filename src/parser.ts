@@ -171,7 +171,9 @@ const flattenDirectory = (dir: string): string[] => {
 };
 export default async function parser(
   directory: string
-): Promise<{ name: string; graph: Jtype.dependencyGraph }[] | undefined> {
+): Promise<
+  { name: string; graph: Jtype.dependencyGraph | "none" }[] | undefined
+> {
   let src: string = findSRC(directory);
   rootSRC = src;
   if (src === "404") {
@@ -187,19 +189,16 @@ export default async function parser(
 
   const viewGraphs: Array<{
     name: string;
-    graph: Jtype.dependencyGraph;
+    graph: Jtype.dependencyGraph | "none";
   }> = [];
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
   for (let view of views) {
     const ast: Jtype.dependencyGraph | undefined = await crawler(view);
-
-    if (ast) {
-      viewGraphs.push({
-        name: view.split(slug + "\\")[1],
-        graph: ast,
-      });
-    }
+    viewGraphs.push({
+      name: view.split(slug + "\\")[1],
+      graph: ast ? ast : "none",
+    });
     resetTrail();
   }
   console.log(viewGraphs);
