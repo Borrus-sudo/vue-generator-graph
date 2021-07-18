@@ -4,6 +4,21 @@ import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
 
+//Find all the files from a given directory with search for nested folders
+const flattenDirectory = (dir: string): string[] => {
+  const contents: string[] = fs.readdirSync(dir);
+  const result: string[] = [];
+  for (let content of contents) {
+    const contentPath = path.join(dir, content);
+    if (fs.statSync(contentPath).isFile()) {
+      result.push(contentPath);
+    } else {
+      result.push(...flattenDirectory(contentPath));
+    }
+  }
+  return result;
+};
+
 //Find the source folder
 let rootSRC: string = "";
 const findSRC: Jtype.findSRCType = (baseURL: string): string => {
@@ -30,7 +45,15 @@ const findSRC: Jtype.findSRCType = (baseURL: string): string => {
   if (search) return search;
   else return "404";
 };
-const pathResolve = (dir: string): string => {
+
+//Resolve a dependency path 
+const pathResolve = (dir: string, payloadDir: string): string => {
+  dir = !dir.startsWith("@")
+    ? path.resolve(payloadDir, dir)
+    : dir
+        .split("/")
+        .map((char) => (char === "@" ? rootSRC : char))
+        .join(path.sep);
   const mainDetails = path.parse(dir);
   let result: string = "";
   if (!mainDetails.ext && fs.existsSync(mainDetails.dir)) {
@@ -45,6 +68,7 @@ const pathResolve = (dir: string): string => {
   result = result ? result : dir;
   return result;
 };
+
 //Return an array of import statements or undefined if there are none
 const extractImports = async (
   directory: string
@@ -100,14 +124,7 @@ const crawlViewDecorator = (): [Function, Function] => {
           trail.splice(trail.indexOf(payloadName + payloadExt) + 1);
           let subDependencyGraph: Jtype.dependencyGraph | undefined;
           if (dependency.n) {
-            const dependencyPath = pathResolve(
-              !dependency.n.startsWith("@")
-                ? path.resolve(payloadDir, dependency.n)
-                : dependency.n
-                    .split("/")
-                    .map((char) => (char === "@" ? rootSRC : char))
-                    .join(path.sep)
-            );
+            const dependencyPath = pathResolve(dependency.n, payloadDir);
             const { name, ext } = path.parse(dependencyPath);
             if (
               !(
@@ -155,20 +172,8 @@ const crawlViewDecorator = (): [Function, Function] => {
   };
   return [crawlView, resetTrail];
 };
+
 //Function to put all the pieces together
-const flattenDirectory = (dir: string): string[] => {
-  const contents: string[] = fs.readdirSync(dir);
-  const result: string[] = [];
-  for (let content of contents) {
-    const contentPath = path.join(dir, content);
-    if (fs.statSync(contentPath).isFile()) {
-      result.push(contentPath);
-    } else {
-      result.push(...flattenDirectory(contentPath));
-    }
-  }
-  return result;
-};
 export default async function parser(
   directory: string
 ): Promise<
