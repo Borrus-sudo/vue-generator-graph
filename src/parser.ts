@@ -3,11 +3,11 @@ import * as path from "path";
 import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
-import { parse as inferTemplate, compileTemplate } from "@vue/compiler-sfc";
+import * as compiler from "@vue/compiler-sfc";
 
 //Find all the files from a given directory with search for nested folders
 const flattenDirectory = (dir: string): string[] => {
-  const contents: string[] = fs.readdirSync(dir);
+  const contents: string[] = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
   const result: string[] = [];
   for (let content of contents) {
     const contentPath = path.join(dir, content);
@@ -56,13 +56,6 @@ const pathResolve = (dir: string, payloadDir: string): string => {
         .map((char) => (char === "@" ? rootSRC : char))
         .join(path.sep);
 
-  if (dir && fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
-    if (fs.existsSync(path.join(dir, "index.ts"))) {
-      dir = path.join(dir, "index.ts");
-      console.log({ dir });
-    }
-  }
-
   const mainDetails = path.parse(dir);
   let result: string = "";
   if (!mainDetails.ext && fs.existsSync(mainDetails.dir)) {
@@ -103,42 +96,61 @@ const extractImports = async (
   const vueCode: string =
     code ||
     (ext === ".js" || ext === ".ts" ? sfcCode : "const noImports='doofus'");
+  const statements: lexer.ImportSpecifier[] = [];
   const { 0: importStatements } = lexer.parse(vueCode);
-  if (ext === ".vue") {
+  statements.push(...importStatements);
+  console.log({ statements });
+
+  const componentDir = path.join(rootSRC, "components");
+
+  if (ext === ".vue" && fs.existsSync(componentDir)) {
     console.log("Vue component");
-
     const templateCode =
-      "<template>" +
-        parsedCode?.querySelector("template")?.innerText.trim() +
-        "</template>" || "";
+      "<template> <div>" +
+      (parsedCode?.querySelector("template")?.innerText.trim() || "") +
+      "</div> </template>";
+    console.log({
+      templateCode,
+      dynamicPart:
+        parsedCode?.querySelector("template")?.innerText.trim() || "",
+    });
+    const parsed = compiler.parse(templateCode).descriptor;
+    console.log(parsed);
 
-    const parsed = inferTemplate(templateCode).descriptor;
-    const template = compileTemplate({
+    const template = compiler.compileTemplate({
       id: "tmp",
       source: parsed.template ? parsed.template.content : "",
       filename: "crap",
     });
+    console.log(template);
 
-    if (template.ast && template.ast.components.length > 0) {
+    if (template.ast && template.ast.components) {
       const components = template.ast.components;
       console.log(components);
+      const contents: string[] = flattenDirectory(componentDir);
+      for (let content of contents) {
+        const { name } = path.parse(content);
+        if (components.includes(name)) {
+          let isPresent = false;
+          importStatements.forEach((element) => {
+            const elemName = path.parse(element.n || "").name || "";
+            console.log({ elemName });
 
-      const componentDir = path.join(rootSRC, "components");
-      if (fs.existsSync(componentDir)) {
-        const contents: string[] = flattenDirectory(componentDir);
-        for (let content of contents) {
-          const { name } = path.parse(content);
-
-          if (components.includes(name)) {
-           
-            importStatements.forEach((elem) => {
-              const elemComponentName = path.parse(elem.n || "").name;
-              if (!components.includes(elemComponentName)) {
-                //@ts-ignore
-                importStatements.push({
-                  n: content,
-                });
-              }
+            console.log("Failed");
+            if (elemName === name) {
+              isPresent = true;
+            }
+            console.log("Passed");
+          });
+          if (!isPresent) {
+            //Only n is required hence the other are given default random values
+            statements.push({
+              d: 0,
+              e: 0,
+              n: content,
+              s: 0,
+              se: 0,
+              ss: 0,
             });
           }
         }
@@ -146,7 +158,7 @@ const extractImports = async (
     }
   }
 
-  return importStatements.length > 0 ? importStatements : undefined;
+  return statements.length > 0 ? statements : undefined;
 };
 
 //Get the imports from a file and crawl it to get imports and form a dependency graph of the view
@@ -254,6 +266,7 @@ export default async function parser(
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
   views.push(path.resolve(src, "./App.vue"));
+  console.log(views);
 
   for (let view of views) {
     const ast: Jtype.dependencyGraph | undefined = await crawler(view);

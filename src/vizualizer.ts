@@ -20,14 +20,16 @@ const createGraphs = (
         node.name != "App.vue"
           ? "<u>BareImports</u> <br>"
           : "<u>Plugins</u> <br>"
-      }${node.graph.bareImports.map((elem) => elem.name).join("<br>")}] \n`;
+      }${[...new Set(node.graph.bareImports.map((elem) => elem.name))].join(
+        "<br>"
+      )}] \n`;
     }
     return currentScript;
   };
   const mds: string[] = [];
   for (const viewGraph of viewGraphs) {
-    const mermaidMD = `graph LR \n` + createNodeGraph(viewGraph);
-    mermaidMD != `graph LR \n`
+    const mermaidMD = `graph TB \n` + createNodeGraph(viewGraph);
+    mermaidMD != `graph TB \n`
       ? mds.push(mermaidMD)
       : mds.push(mermaidMD + `\t ${viewGraph.name}`);
   }
@@ -38,7 +40,7 @@ const createGraphs = (
 export default function visualize(
   viewGraphs: Array<{
     name: string;
-    graph: dependencyGraph;
+    graph: dependencyGraph | "none";
   }>
 ): string[] {
   return createGraphs(viewGraphs);
