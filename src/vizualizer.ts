@@ -28,8 +28,8 @@ const createGraphs = (
   };
   const mds: string[] = [];
   for (const viewGraph of viewGraphs) {
-    const mermaidMD = `graph TB \n` + createNodeGraph(viewGraph);
-    mermaidMD != `graph TB \n`
+    const mermaidMD = `graph LR \n` + createNodeGraph(viewGraph);
+    mermaidMD != `graph LR \n`
       ? mds.push(mermaidMD)
       : mds.push(mermaidMD + `\t ${viewGraph.name}`);
   }

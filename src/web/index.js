@@ -1,7 +1,7 @@
 import mermaid from "mermaid";
 
 mermaid.initialize({
-    theme: "neutral",
+    theme: "default",
     flowchart: {
         useMaxWidth: true,
         htmlLabels: true,

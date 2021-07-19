@@ -3,8 +3,8 @@ import * as path from "path";
 import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
-import * as compiler from "@vue/compiler-sfc";
-
+//@ts-ignore
+import getComponenets from "./sfc-compiler.js";
 //Find all the files from a given directory with search for nested folders
 const flattenDirectory = (dir: string): string[] => {
   const contents: string[] = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
@@ -109,50 +109,33 @@ const extractImports = async (
       "<template> <div>" +
       (parsedCode?.querySelector("template")?.innerText.trim() || "") +
       "</div> </template>";
-    console.log({
-      templateCode,
-      dynamicPart:
-        parsedCode?.querySelector("template")?.innerText.trim() || "",
-    });
-    const parsed = compiler.parse(templateCode).descriptor;
-    console.log(parsed);
+    const components = getComponenets(templateCode);
+    console.log(components);
+    const contents: string[] = flattenDirectory(componentDir);
+    for (let content of contents) {
+      const { name } = path.parse(content);
+      if (components.includes(name)) {
+        let isPresent = false;
+        importStatements.forEach((element) => {
+          const elemName = path.parse(element.n || "").name || "";
+          console.log({ elemName });
 
-    const template = compiler.compileTemplate({
-      id: "tmp",
-      source: parsed.template ? parsed.template.content : "",
-      filename: "crap",
-    });
-    console.log(template);
-
-    if (template.ast && template.ast.components) {
-      const components = template.ast.components;
-      console.log(components);
-      const contents: string[] = flattenDirectory(componentDir);
-      for (let content of contents) {
-        const { name } = path.parse(content);
-        if (components.includes(name)) {
-          let isPresent = false;
-          importStatements.forEach((element) => {
-            const elemName = path.parse(element.n || "").name || "";
-            console.log({ elemName });
-
-            console.log("Failed");
-            if (elemName === name) {
-              isPresent = true;
-            }
-            console.log("Passed");
-          });
-          if (!isPresent) {
-            //Only n is required hence the other are given default random values
-            statements.push({
-              d: 0,
-              e: 0,
-              n: content,
-              s: 0,
-              se: 0,
-              ss: 0,
-            });
+          console.log("Failed");
+          if (elemName === name) {
+            isPresent = true;
           }
+          console.log("Passed");
+        });
+        if (!isPresent) {
+          //Only n is required hence the other are given default random values
+          statements.push({
+            d: 0,
+            e: 0,
+            n: content,
+            s: 0,
+            se: 0,
+            ss: 0,
+          });
         }
       }
     }
