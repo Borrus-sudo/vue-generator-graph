@@ -3,7 +3,7 @@ import { dependencyGraph } from "./types";
 const createGraphs = (
   viewGraphs: Array<{
     name: string;
-    graph: dependencyGraph;
+    graph: "none" | dependencyGraph;
   }>
 ): string[] => {
   const createNodeGraph = (node: {
@@ -17,7 +17,9 @@ const createGraphs = (
         currentScript += createNodeGraph(module);
       }
       currentScript += `\t ${node.name}[${node.name}<br> ${
-        node.name != "App.vue" ? "<u>BareImports</u> <br>" : "<u>Plugins</u> <br>"
+        node.name != "App.vue"
+          ? "<u>BareImports</u> <br>"
+          : "<u>Plugins</u> <br>"
       }${node.graph.bareImports.map((elem) => elem.name).join("<br>")}] \n`;
     }
     return currentScript;

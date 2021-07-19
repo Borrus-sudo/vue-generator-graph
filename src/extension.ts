@@ -23,7 +23,7 @@ export async function activate(context: vscode.ExtensionContext) {
         const viewGraphs:
           | Array<{
               name: string;
-              graph: dependencyGraph;
+              graph: "none" | dependencyGraph;
             }>
           | undefined = await parser(mainFolder);
         if (!viewGraphs) {

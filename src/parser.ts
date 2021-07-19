@@ -3,6 +3,7 @@ import * as path from "path";
 import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
+import { parse as inferTemplate, compileTemplate } from "@vue/compiler-sfc";
 
 //Find all the files from a given directory with search for nested folders
 const flattenDirectory = (dir: string): string[] => {
@@ -46,14 +47,22 @@ const findSRC: Jtype.findSRCType = (baseURL: string): string => {
   else return "404";
 };
 
-//Resolve a dependency path 
+//Resolve a dependency path
 const pathResolve = (dir: string, payloadDir: string): string => {
-  dir = !dir.startsWith("@")
+  dir = !(dir.startsWith("@") || dir.startsWith("~"))
     ? path.resolve(payloadDir, dir)
     : dir
         .split("/")
         .map((char) => (char === "@" ? rootSRC : char))
         .join(path.sep);
+
+  if (dir && fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
+    if (fs.existsSync(path.join(dir, "index.ts"))) {
+      dir = path.join(dir, "index.ts");
+      console.log({ dir });
+    }
+  }
+
   const mainDetails = path.parse(dir);
   let result: string = "";
   if (!mainDetails.ext && fs.existsSync(mainDetails.dir)) {
@@ -65,7 +74,9 @@ const pathResolve = (dir: string, payloadDir: string): string => {
       }
     }
   }
+
   result = result ? result : dir;
+
   return result;
 };
 
@@ -79,20 +90,61 @@ const extractImports = async (
     encoding: "utf-8",
   });
   const ext = path.parse(directory).ext;
-  const code = parse(sfcCode, {
+  const parsedCode = parse(sfcCode, {
     lowerCaseTagName: false,
     comment: false,
     blockTextElements: {
       script: true,
+      template: true,
     },
-  })
-    ?.querySelector("script")
-    ?.innerText.trim();
+  });
+  const code = parsedCode?.querySelector("script")?.innerText.trim();
 
   const vueCode: string =
     code ||
     (ext === ".js" || ext === ".ts" ? sfcCode : "const noImports='doofus'");
   const { 0: importStatements } = lexer.parse(vueCode);
+  if (ext === ".vue") {
+    console.log("Vue component");
+
+    const templateCode =
+      "<template>" +
+        parsedCode?.querySelector("template")?.innerText.trim() +
+        "</template>" || "";
+
+    const parsed = inferTemplate(templateCode).descriptor;
+    const template = compileTemplate({
+      id: "tmp",
+      source: parsed.template ? parsed.template.content : "",
+      filename: "crap",
+    });
+
+    if (template.ast && template.ast.components.length > 0) {
+      const components = template.ast.components;
+      console.log(components);
+
+      const componentDir = path.join(rootSRC, "components");
+      if (fs.existsSync(componentDir)) {
+        const contents: string[] = flattenDirectory(componentDir);
+        for (let content of contents) {
+          const { name } = path.parse(content);
+
+          if (components.includes(name)) {
+           
+            importStatements.forEach((elem) => {
+              const elemComponentName = path.parse(elem.n || "").name;
+              if (!components.includes(elemComponentName)) {
+                //@ts-ignore
+                importStatements.push({
+                  n: content,
+                });
+              }
+            });
+          }
+        }
+      }
+    }
+  }
 
   return importStatements.length > 0 ? importStatements : undefined;
 };
@@ -104,8 +156,9 @@ const crawlViewDecorator = (): [Function, Function] => {
   const crawlView = async (
     baseString: string
   ): Promise<Jtype.dependencyGraph | undefined> => {
-    if (cache.get(baseString)) {
-      return cache.get(baseString);
+    const returnVal = cache.get(baseString);
+    if (returnVal) {
+      return returnVal;
     } else {
       const dependencies = await extractImports(baseString);
 
@@ -130,7 +183,9 @@ const crawlViewDecorator = (): [Function, Function] => {
               !(
                 dependency.n.startsWith("./") ||
                 dependency.n.startsWith("../") ||
-                dependency.n.startsWith("@/")
+                dependency.n.startsWith("@/") ||
+                dependency.n.startsWith("~/") ||
+                fs.existsSync(dependency.n)
               )
             ) {
               dependencyGraph.bareImports.push({
@@ -198,10 +253,12 @@ export default async function parser(
   }> = [];
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
+  views.push(path.resolve(src, "./App.vue"));
+
   for (let view of views) {
     const ast: Jtype.dependencyGraph | undefined = await crawler(view);
     viewGraphs.push({
-      name: view.split(slug + "\\")[1],
+      name: view.split(src + "\\")[1],
       graph: ast ? ast : "none",
     });
     resetTrail();
