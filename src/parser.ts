@@ -3,6 +3,8 @@ import * as path from "path";
 import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
+import { paramCase } from "change-case";
+
 //@ts-ignore
 import getComponenets from "./sfc-compiler.js";
 //Find all the files from a given directory with search for nested folders
@@ -112,10 +114,10 @@ const extractImports = async (
     const components = getComponenets(templateCode);
     console.log(components);
     const contents: string[] = flattenDirectory(componentDir);
-    if (components.length > 1)
+    if (components.length > 0)
       for (let content of contents) {
         const { name } = path.parse(content);
-        if (components.includes(name)) {
+        if (components.includes(name) || components.includes(paramCase(name))) {
           let isPresent = false;
           importStatements.forEach((element) => {
             const elemName = path.parse(element.n || "").name || "";

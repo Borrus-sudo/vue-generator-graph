@@ -29,20 +29,12 @@ const config = {
     },
     module: {
         rules: [{
-                test: /\.ts$/,
-                exclude: /node_modules/,
-                use: [{
-                    loader: "ts-loader",
-                }, ],
-            },
-            {
-                test: /\.html$/i,
-                loader: "html-loader",
-                options: {
-                    minimize: true,
-                },
-            },
-        ],
-    }
+            test: /\.ts$/,
+            exclude: /node_modules/,
+            use: [{
+                loader: "ts-loader",
+            }, ],
+        }, ],
+    },
 };
 module.exports = config;
