@@ -91,10 +91,10 @@ const extractImports = async (
       template: true,
     },
   });
-  const code = parsedCode?.querySelector("script")?.innerText.trim();
+  const scriptCode = parsedCode?.querySelector("script")?.innerText.trim();
 
   const vueCode: string =
-    code ||
+    scriptCode ||
     (ext === ".js" || ext === ".ts" ? sfcCode : "const noImports='doofus'");
   const statements: lexer.ImportSpecifier[] = [];
   const { 0: importStatements } = lexer.parse(vueCode);
@@ -106,39 +106,40 @@ const extractImports = async (
   if (ext === ".vue" && fs.existsSync(componentDir)) {
     console.log("Vue component");
     const templateCode =
-      "<template> <div>" +
-      (parsedCode?.querySelector("template")?.innerText.trim() || "") +
-      "</div> </template>";
+      "<template>" +
+      parsedCode.querySelector("template")?.innerHTML.trim() +
+      "</template>";
     const components = getComponenets(templateCode);
     console.log(components);
     const contents: string[] = flattenDirectory(componentDir);
-    for (let content of contents) {
-      const { name } = path.parse(content);
-      if (components.includes(name)) {
-        let isPresent = false;
-        importStatements.forEach((element) => {
-          const elemName = path.parse(element.n || "").name || "";
-          console.log({ elemName });
+    if (components.length > 1)
+      for (let content of contents) {
+        const { name } = path.parse(content);
+        if (components.includes(name)) {
+          let isPresent = false;
+          importStatements.forEach((element) => {
+            const elemName = path.parse(element.n || "").name || "";
+            console.log({ elemName });
 
-          console.log("Failed");
-          if (elemName === name) {
-            isPresent = true;
-          }
-          console.log("Passed");
-        });
-        if (!isPresent) {
-          //Only n is required hence the other are given default random values
-          statements.push({
-            d: 0,
-            e: 0,
-            n: content,
-            s: 0,
-            se: 0,
-            ss: 0,
+            console.log("Failed");
+            if (elemName === name) {
+              isPresent = true;
+            }
+            console.log("Passed");
           });
+          if (!isPresent) {
+            //Only n is required hence the other are given default random values
+            statements.push({
+              d: 0,
+              e: 0,
+              n: content,
+              s: 0,
+              se: 0,
+              ss: 0,
+            });
+          }
         }
       }
-    }
   }
 
   return statements.length > 0 ? statements : undefined;
