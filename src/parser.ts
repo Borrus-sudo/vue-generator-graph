@@ -4,7 +4,7 @@ import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
 import { paramCase } from "change-case";
-import getComponents from "./sfc-compiler";
+import getComponents from "./revealComponents";
 //Find all the files from a given directory with search for nested folders
 const flattenDirectory = (dir: string): string[] => {
   const contents: string[] = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
