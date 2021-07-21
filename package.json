@@ -50,11 +50,10 @@
         "webpack-cli": "^4.7.2"
     },
     "dependencies": {
-        "@vue/compiler-sfc": "^3.1.5",
         "change-case": "^4.1.2",
         "es-module-lexer": "^0.6.0",
+        "html-tags": "^3.1.0",
         "mermaid": "^8.11.0",
-        "node-html-parser": "^4.0.0",
-        "vue": "3.1.5"
+        "node-html-parser": "^4.0.0"
     }
 }

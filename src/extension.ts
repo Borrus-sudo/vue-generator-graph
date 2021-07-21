@@ -27,7 +27,9 @@ export async function activate(context: vscode.ExtensionContext) {
             }>
           | undefined = await parser(mainFolder);
         if (!viewGraphs) {
-          vscode.window.showErrorMessage("SRC directory not found.");
+          vscode.window.showErrorMessage(
+            " Neither `src` directory nor `pages` directory wasfound."
+          );
           return;
         }
         const onDiskFilePath = vscode.Uri.file(

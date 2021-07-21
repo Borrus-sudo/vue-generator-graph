@@ -4,9 +4,7 @@ import * as Jtype from "./types";
 import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
 import { paramCase } from "change-case";
-
-//@ts-ignore
-import getComponenets from "./sfc-compiler.js";
+import getComponents from "./sfc-compiler";
 //Find all the files from a given directory with search for nested folders
 const flattenDirectory = (dir: string): string[] => {
   const contents: string[] = fs.existsSync(dir) ? fs.readdirSync(dir) : [];
@@ -107,12 +105,12 @@ const extractImports = async (
 
   if (ext === ".vue" && fs.existsSync(componentDir)) {
     console.log("Vue component");
-    const templateCode =
-      "<template>" +
-      parsedCode.querySelector("template")?.innerHTML.trim() +
-      "</template>";
-    const components = getComponenets(templateCode);
+    const templateCode: string = parsedCode
+      .querySelector("template")
+      ?.innerHTML.trim();
+    const components = getComponents(templateCode);
     console.log(components);
+    console.log("Fails here");
     const contents: string[] = flattenDirectory(componentDir);
     if (components.length > 0)
       for (let content of contents) {
@@ -122,7 +120,6 @@ const extractImports = async (
           importStatements.forEach((element) => {
             const elemName = path.parse(element.n || "").name || "";
             console.log({ elemName });
-
             console.log("Failed");
             if (elemName === name) {
               isPresent = true;
