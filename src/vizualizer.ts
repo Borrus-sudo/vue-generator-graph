@@ -16,13 +16,13 @@ export default function (
         currentScript += `\t ${node.name}-->${module.name} \n`;
         currentScript += createNodeGraph(module);
       }
-      currentScript += `\t ${node.name}[${node.name}<br> ${
+      currentScript += `\t ${node.name}["${node.name}<br> ${
         node.name != "App.vue"
           ? "<u>BareImports</u> <br>"
           : "<u>Plugins</u> <br>"
       }${[...new Set(node.graph.bareImports.map((elem) => elem.name))].join(
         "<br>"
-      )}] \n`;
+      )}"] \n`;
     }
     return currentScript;
   };
@@ -33,7 +33,7 @@ export default function (
       ? mds.push(mermaidMD)
       : mds.push(mermaidMD + `\t ${viewGraph.name}`);
   }
-  console.log(mds);
+  console.log(mds[0]);
 
   return mds;
 }

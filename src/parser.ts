@@ -49,7 +49,7 @@ const findSRC: Jtype.findSRCType = (baseURL: string): string => {
 
 //Resolve a dependency path
 const pathResolve = (dir: string, payloadDir: string): string => {
-  dir = !(dir.startsWith("@") || dir.startsWith("~"))
+  dir = !(dir.startsWith("@/") || dir.startsWith("~/"))
     ? path.resolve(payloadDir, dir)
     : dir
         .split("/")
@@ -58,9 +58,9 @@ const pathResolve = (dir: string, payloadDir: string): string => {
   if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
     const contents: string[] = fs.readdirSync(dir);
     loop: for (let content of contents) {
-      const { name, ext } = path.parse(content);
+      const { name, base } = path.parse(content);
       if (name === "index") {
-        dir = path.join(dir, name + ext);
+        dir = path.join(dir, base);
         break loop;
       }
     }
@@ -168,19 +168,15 @@ const crawlViewDecorator = (): [Function, Function] => {
         bareImports: [],
         moduleImports: [],
       };
-      const {
-        name: payloadName,
-        ext: payloadExt,
-        dir: payloadDir,
-      } = path.parse(baseString);
-      trail.push(payloadName + payloadExt);
+      const { dir: payloadDir, base: payloadBase } = path.parse(baseString);
+      trail.push(payloadBase);
       if (dependencies) {
         for (let dependency of dependencies) {
-          trail.splice(trail.indexOf(payloadName + payloadExt) + 1);
+          trail.splice(trail.indexOf(payloadBase) + 1);
           let subDependencyGraph: Jtype.dependencyGraph | undefined;
           if (dependency.n) {
             const dependencyPath = pathResolve(dependency.n, payloadDir);
-            const { name, ext } = path.parse(dependencyPath);
+            let { base, dir } = path.parse(dependencyPath);
             if (
               !(
                 dependency.n.startsWith("./") ||
@@ -190,27 +186,35 @@ const crawlViewDecorator = (): [Function, Function] => {
                 fs.existsSync(dependency.n)
               )
             ) {
+              console.log({ bareImport: dir });
+
+              const parts = dir.split(path.sep);
+              console.log({ parts });
+
+              if (parts[parts.length - 1].startsWith("@")) {
+                base = parts[parts.length - 1] + "/" + base;
+              }
               dependencyGraph.bareImports.push({
-                name: name + ext,
+                name: base,
                 graph: "none",
               });
             } else {
-              if (!trail.includes(name + ext)) {
+              if (!trail.includes(base)) {
                 subDependencyGraph = await crawlView(dependencyPath);
                 if (subDependencyGraph) {
                   dependencyGraph.moduleImports.push({
-                    name: name + ext,
+                    name: base,
                     graph: subDependencyGraph,
                   });
                 } else {
                   dependencyGraph.moduleImports.push({
-                    name: name + ext,
+                    name: base,
                     graph: "none",
                   });
                 }
               } else {
                 dependencyGraph.moduleImports.push({
-                  name: name + ext,
+                  name: base,
                   graph: "circularReference",
                 });
               }
