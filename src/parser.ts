@@ -55,7 +55,16 @@ const pathResolve = (dir: string, payloadDir: string): string => {
         .split("/")
         .map((char) => (char === "@" ? rootSRC : char))
         .join(path.sep);
-
+  if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
+    const contents: string[] = fs.readdirSync(dir);
+    loop: for (let content of contents) {
+      const { name, ext } = path.parse(content);
+      if (name === "index") {
+        dir = path.join(dir, name + ext);
+        break loop;
+      }
+    }
+  }
   const mainDetails = path.parse(dir);
   let result: string = "";
   if (!mainDetails.ext && fs.existsSync(mainDetails.dir)) {
@@ -101,17 +110,19 @@ const extractImports = async (
   statements.push(...importStatements);
   const componentDir = path.join(rootSRC, "components");
   if (ext === ".vue" && fs.existsSync(componentDir)) {
-    const templateCode: string = parsedCode
-      .querySelector("template")
-      ?.innerHTML.trim()||"";
+    const templateCode: string =
+      parsedCode.querySelector("template")?.innerHTML.trim() || "";
     const components = getComponents(templateCode);
     const contents: string[] = flattenDirectory(componentDir);
     if (components.length > 0 && contents.length > 0)
       for (let content of contents) {
-        const { name } = path.parse(content);
-        if (components.includes(name) || components.includes(paramCase(name))) {
+        const { name } = path.parse(content ? content : "");
+        if (
+          name &&
+          (components.includes(name) || components.includes(paramCase(name)))
+        ) {
           let isPresent = false;
-          importStatements.forEach((element) => {
+          statements.forEach((element) => {
             const elemName = path.parse(element.n || "").name || "";
             if (elemName === name) {
               isPresent = true;
@@ -141,6 +152,12 @@ const crawlViewDecorator = (): [Function, Function] => {
   const crawlView = async (
     baseString: string
   ): Promise<Jtype.dependencyGraph | undefined> => {
+    if (
+      baseString.endsWith("router" + path.sep + "index.ts") ||
+      baseString.endsWith("router" + path.sep + "index.js")
+    ) {
+      return undefined;
+    }
     const returnVal = cache.get(baseString);
     if (returnVal) {
       return returnVal;
