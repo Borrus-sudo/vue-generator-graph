@@ -1,11 +1,11 @@
 import { dependencyGraph } from "./types";
 
-const createGraphs = (
+export default function (
   viewGraphs: Array<{
     name: string;
     graph: "none" | dependencyGraph;
   }>
-): string[] => {
+): string[] {
   const createNodeGraph = (node: {
     name: string;
     graph: dependencyGraph | "none" | "circularReference";
@@ -36,12 +36,4 @@ const createGraphs = (
   console.log(mds);
 
   return mds;
-};
-export default function visualize(
-  viewGraphs: Array<{
-    name: string;
-    graph: dependencyGraph | "none";
-  }>
-): string[] {
-  return createGraphs(viewGraphs);
 }

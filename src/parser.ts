@@ -99,32 +99,23 @@ const extractImports = async (
   const statements: lexer.ImportSpecifier[] = [];
   const { 0: importStatements } = lexer.parse(vueCode);
   statements.push(...importStatements);
-  console.log({ statements });
-
   const componentDir = path.join(rootSRC, "components");
-
   if (ext === ".vue" && fs.existsSync(componentDir)) {
-    console.log("Vue component");
     const templateCode: string = parsedCode
       .querySelector("template")
-      ?.innerHTML.trim();
+      ?.innerHTML.trim()||"";
     const components = getComponents(templateCode);
-    console.log(components);
-    console.log("Fails here");
     const contents: string[] = flattenDirectory(componentDir);
-    if (components.length > 0)
+    if (components.length > 0 && contents.length > 0)
       for (let content of contents) {
         const { name } = path.parse(content);
         if (components.includes(name) || components.includes(paramCase(name))) {
           let isPresent = false;
           importStatements.forEach((element) => {
             const elemName = path.parse(element.n || "").name || "";
-            console.log({ elemName });
-            console.log("Failed");
             if (elemName === name) {
               isPresent = true;
             }
-            console.log("Passed");
           });
           if (!isPresent) {
             //Only n is required hence the other are given default random values
@@ -140,7 +131,6 @@ const extractImports = async (
         }
       }
   }
-
   return statements.length > 0 ? statements : undefined;
 };
 
@@ -224,7 +214,7 @@ const crawlViewDecorator = (): [Function, Function] => {
 };
 
 //Function to put all the pieces together
-export default async function parser(
+export default async function (
   directory: string
 ): Promise<
   { name: string; graph: Jtype.dependencyGraph | "none" }[] | undefined
@@ -249,7 +239,6 @@ export default async function parser(
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
   views.push(path.resolve(src, "./App.vue"));
-  console.log(views);
 
   for (let view of views) {
     const ast: Jtype.dependencyGraph | undefined = await crawler(view);
@@ -259,7 +248,6 @@ export default async function parser(
     });
     resetTrail();
   }
-  console.log(viewGraphs);
 
   return viewGraphs;
 }
