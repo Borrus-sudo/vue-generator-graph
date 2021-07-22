@@ -16,13 +16,28 @@ export default function (
         currentScript += `\t ${node.name}-->${module.name} \n`;
         currentScript += createNodeGraph(module);
       }
-      currentScript += `\t ${node.name}["${node.name}<br> ${
+      let start: string = "[";
+      let end: string = "]";
+      if (node.name === "store") {
+        start = "[(";
+        end = ")]";
+      } else if (node.name.includes("pages") || node.name.includes("views")||node.name.includes("App.vue")) {
+        start = "[[";
+        end = "]]";
+      }
+      currentScript += `\t ${node.name}${start}"${node.name}<br> ${
         node.name != "App.vue"
           ? "<u>BareImports</u> <br>"
           : "<u>Plugins</u> <br>"
       }${[...new Set(node.graph.bareImports.map((elem) => elem.name))].join(
         "<br>"
-      )}"] \n`;
+      )}"${end} \n`;
+    } else {
+      if (node.name === "store") {
+        currentScript += `\t ${node.name}[(${node.name})] \n`;
+      } else if (node.name.includes("pages") || node.name.includes("views")||node.name.includes("App.vue")) {
+        currentScript += `\t ${node.name}[[${node.name}]] \n`;
+      }
     }
     return currentScript;
   };
