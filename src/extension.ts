@@ -4,6 +4,7 @@ import parser from "./parser";
 import visualize from "./vizualizer";
 import getWebviewContent from "./getWebview";
 import { dependencyGraph } from "./types";
+
 export async function activate(context: vscode.ExtensionContext) {
   let panel: vscode.WebviewPanel | undefined = undefined;
   context.subscriptions.push(

@@ -167,6 +167,7 @@ const crawlViewDecorator = (): [Function, Function] => {
       const dependencyGraph: Jtype.dependencyGraph = {
         bareImports: [],
         moduleImports: [],
+        baseString,
       };
       const { dir: payloadDir, base: payloadBase } = path.parse(baseString);
       trail.push(payloadBase);
@@ -186,11 +187,7 @@ const crawlViewDecorator = (): [Function, Function] => {
                 fs.existsSync(dependency.n)
               )
             ) {
-              console.log({ bareImport: dir });
-
               const parts = dir.split(path.sep);
-              console.log({ parts });
-
               if (parts[parts.length - 1].startsWith("@")) {
                 base = parts[parts.length - 1] + "/" + base;
               }
@@ -256,6 +253,7 @@ export default async function (
   const viewGraphs: Array<{
     name: string;
     graph: Jtype.dependencyGraph | "none";
+    baseString: fs.PathLike;
   }> = [];
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
@@ -266,9 +264,11 @@ export default async function (
     viewGraphs.push({
       name: view.split(src + "\\")[1],
       graph: ast ? ast : "none",
+      baseString: view,
     });
     resetTrail();
   }
+  console.log(viewGraphs);
 
   return viewGraphs;
 }
