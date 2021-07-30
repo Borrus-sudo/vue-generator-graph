@@ -14,9 +14,10 @@ export default function (
     let start: string = "(";
     let end: string = ")";
     if (
-      node.name === "store" ||
-      node.name === "store.ts" ||
-      node.name === "store.js"
+      node.name.includes("store") ||
+      (node.graph !== "none" &&
+        node.graph !== "circularReference" &&
+        node.graph.baseString.includes("store"))
     ) {
       start = "[(";
       end = ")]";
@@ -32,7 +33,12 @@ export default function (
     if (node.graph != "circularReference" && node.graph != "none") {
       for (let module of node.graph.moduleImports) {
         currentScript += `\t ${node.name}-->${module.name} \n`;
-        currentScript += createNodeGraph(module);
+        const result = createNodeGraph(module).split("\n");
+        for (let content of result) {
+          if (!currentScript.includes(content)) {
+            currentScript += `${content} \n`;
+          }
+        }
       }
       // currentScript += `\t ${node.name}${start}"${node.name}<br> ${
       //   node.name != "App.vue"
@@ -41,11 +47,8 @@ export default function (
       // }${[...new Set(node.graph.bareImports.map((elem) => elem.name))].join(
       //   "<br>"
       // )}"${end} \n`;
-
     }
-    // else {
     currentScript += `\t ${node.name}${start}${node.name}${end} \n`;
-    // }
     return currentScript;
   };
   const mds: string[] = [];

@@ -53,7 +53,7 @@ const pathResolve = (dir: string, payloadDir: string): string => {
     ? path.resolve(payloadDir, dir)
     : dir
         .split("/")
-        .map((char) => (char === "@" ? rootSRC : char))
+        .map((char) => (char === "@" || char === "~" ? rootSRC : char))
         .join(path.sep);
   if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
     const contents: string[] = fs.readdirSync(dir);
@@ -69,15 +69,18 @@ const pathResolve = (dir: string, payloadDir: string): string => {
   let result: string = "";
   if (!mainDetails.ext && fs.existsSync(mainDetails.dir)) {
     const contents = fs.readdirSync(mainDetails.dir);
-    for (let content of contents) {
+    loop: for (let content of contents) {
       const contentDetails = path.parse(path.join(mainDetails.dir, content));
-      if (contentDetails.name === mainDetails.name) {
+      console.log({ contentDetails });
+      if (contentDetails.name === mainDetails.name && contentDetails.ext) {
         result = dir + contentDetails.ext;
+        break loop;
       }
     }
   }
 
   result = result ? result : dir;
+  console.log({ result });
 
   return result;
 };
@@ -87,12 +90,15 @@ const extractImports = async (
   directory: string
 ): Promise<readonly lexer.ImportSpecifier[] | undefined> => {
   await lexer.init;
-  if (!fs.existsSync(directory)) return undefined;
+  if (!fs.existsSync(directory) || !fs.statSync(directory).isFile())
+    return undefined;
+  console.log("Reads as a file and destroys");
+
   const sfcCode: string = fs.readFileSync(directory, {
     encoding: "utf-8",
   });
   const ext = path.parse(directory).ext;
-  const parsedCode = parse(sfcCode, {
+  const parsedCode = parse(ext === ".vue" ? sfcCode : "", {
     lowerCaseTagName: false,
     comment: false,
     blockTextElements: {
@@ -235,7 +241,7 @@ const crawlViewDecorator = (): [Function, Function] => {
 export default async function (
   directory: string
 ): Promise<
-  { name: string; graph: Jtype.dependencyGraph | "none" }[] | undefined
+  { name: string;graph: Jtype.dependencyGraph | "none" }[] | undefined
 > {
   let src: string = findSRC(directory);
   rootSRC = src;
@@ -253,7 +259,6 @@ export default async function (
   const viewGraphs: Array<{
     name: string;
     graph: Jtype.dependencyGraph | "none";
-    baseString: fs.PathLike;
   }> = [];
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
@@ -264,7 +269,6 @@ export default async function (
     viewGraphs.push({
       name: view.split(src + "\\")[1],
       graph: ast ? ast : "none",
-      baseString: view,
     });
     resetTrail();
   }
