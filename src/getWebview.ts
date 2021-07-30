@@ -16,17 +16,16 @@ export default function getWebviewContent(src: Uri, scripts: string[]): string {
     <title>Document</title>
 </head>
 
-<body >
-    <h1>Graph 📊</h1>
-   <br>
-   <br>
-${scriptsInHTML}
+<body>
+  <script>var callback=function (){ console.log('Crap called')}</script>    
+  <h1>Graph 📊</h1>
+  <br>
+  <br>
+  ${scriptsInHTML}
  
-    
-<script src=${src}></script>
-
-
+  <script src=${src}></script>
 </body>
+
 </html>
   `;
 }

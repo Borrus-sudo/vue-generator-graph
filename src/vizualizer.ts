@@ -47,8 +47,12 @@ export default function (
       // }${[...new Set(node.graph.bareImports.map((elem) => elem.name))].join(
       //   "<br>"
       // )}"${end} \n`;
+      if (node.graph.baseString) {
+        // currentScript += `\t click ${node.name} callback "Tool tip" \n`;
+      }
     }
     currentScript += `\t ${node.name}${start}${node.name}${end} \n`;
+
     return currentScript;
   };
   const mds: string[] = [];

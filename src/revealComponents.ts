@@ -2,7 +2,13 @@ import { parse } from "node-html-parser";
 import * as tags from "html-tags";
 export default function (templateCode: string): string[] {
   const result: string[] = [];
-  const nodes = parse(templateCode).querySelectorAll("*");
+  const nodes = parse(templateCode, {
+    lowerCaseTagName: false,
+    comment: false,
+    blockTextElements: {
+      template: true,
+    },
+  }).querySelectorAll("*");
   for (let node of nodes) {
     if (
       !tags.includes(node.rawTagName.toLowerCase()) &&

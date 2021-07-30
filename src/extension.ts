@@ -10,6 +10,8 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("visualize.start", async () => {
       // Create and show a new webview
+      let uri = vscode.Uri.file("E:/jdev/WebArtisan.dev/src/App.vue");
+      await vscode.commands.executeCommand("vscode.openFolder", uri);
       panel = vscode.window.createWebviewPanel(
         "visualize",
         "Generator Graph",
