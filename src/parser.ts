@@ -52,7 +52,8 @@ const findContent: Jtype.findSRCType = (
 
 //Create a path alias map
 const pathAlias: Map<string, string> = new Map();
-const aliases: Set<string> = new Set(["@/"]);
+const aliases: Set<string> = new Set();
+aliases.add("@/");
 const createPathAlias = (dir: string): void => {
   const configs: string[] = [];
   const res1 = findContent(dir, "tsconfig.json");
@@ -63,12 +64,56 @@ const createPathAlias = (dir: string): void => {
   if (res2 !== "404") {
     configs.push(...res2);
   }
-  console.log({ configs });
-};
+  for (let config of configs) {
+    console.log({ config });
 
+    const mainDir = path.parse(config).dir;
+    const content: any = JSON.parse(
+      fs.readFileSync(config, { encoding: "utf-8" })
+    );
+    console.log(content);
+    console.log(content.compilerOptions);
+    console.log(content.compilerOptions.paths);
+
+    let basePath: string = path.resolve(
+      mainDir,
+      content?.compilerOptions?.baseUrl || ""
+    );
+    console.log({ basePath });
+
+    if (
+      content.compilerOptions &&
+      content.compilerOptions.paths &&
+      typeof content.compilerOptions.paths === "object"
+    ) {
+      Object.keys(content.compilerOptions.paths).forEach((key) => {
+        const val: string = path.resolve(
+          basePath,
+          content.compilerOptions.paths[key][0] || ""
+        );
+        console.log({ key, val });
+
+        pathAlias.set(key, val);
+        aliases.add(key);
+      });
+    }
+  }
+  console.log("After loop problem");
+
+  // console.log({ configs });
+};
+const doesInclude = (dir: string): { includes: boolean; alias: string } => {
+  aliases.forEach((alias) => {
+    if (dir.startsWith(alias)) {
+      return { includes: true, alias };
+    }
+  });
+  return { includes: false, alias: "" };
+};
 //Resolve a dependency path
 const pathResolve = (dir: string, payloadDir: string): string => {
-  dir = !aliases.has(dir[0] + dir[1])
+  const res = doesInclude(dir);
+  dir = !res.includes
     ? path.resolve(payloadDir, dir)
     : dir
         .split("/")
@@ -207,7 +252,7 @@ const crawlViewDecorator = (): [Function, Function] => {
               !(
                 dependency.n.startsWith("./") ||
                 dependency.n.startsWith("../") ||
-                aliases.has(dependency.n[0] + dependency.n[1]) ||
+                doesInclude(dependency.n).includes ||
                 fs.existsSync(dependency.n)
               )
             ) {
