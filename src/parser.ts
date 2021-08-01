@@ -53,7 +53,6 @@ const findContent: Jtype.findSRCType = (
 //Create a path alias map
 const pathAlias: Map<string, string> = new Map();
 const aliases: Set<string> = new Set();
-aliases.add("@/");
 const createPathAlias = (dir: string): void => {
   const configs: string[] = [];
   const res1 = findContent(dir, "tsconfig.json");
@@ -65,22 +64,15 @@ const createPathAlias = (dir: string): void => {
     configs.push(...res2);
   }
   for (let config of configs) {
-    console.log({ config });
-
     const mainDir = path.parse(config).dir;
     const content: any = JSON.parse(
       fs.readFileSync(config, { encoding: "utf-8" })
     );
-    console.log(content);
-    console.log(content.compilerOptions);
-    console.log(content.compilerOptions.paths);
 
     let basePath: string = path.resolve(
       mainDir,
       content?.compilerOptions?.baseUrl || ""
     );
-    console.log({ basePath });
-
     if (
       content.compilerOptions &&
       content.compilerOptions.paths &&
@@ -91,34 +83,31 @@ const createPathAlias = (dir: string): void => {
           basePath,
           content.compilerOptions.paths[key][0] || ""
         );
-        console.log({ key, val });
-
-        pathAlias.set(key, val);
+        pathAlias.set(key, val.endsWith("/") ? val : val + "/");
         aliases.add(key);
       });
     }
   }
-  console.log("After loop problem");
-
-  // console.log({ configs });
 };
 const doesInclude = (dir: string): { includes: boolean; alias: string } => {
+  let toReturn: { includes: boolean; alias: string } = {
+    includes: false,
+    alias: "",
+  };
   aliases.forEach((alias) => {
     if (dir.startsWith(alias)) {
-      return { includes: true, alias };
+      toReturn = { includes: true, alias };
     }
   });
-  return { includes: false, alias: "" };
+  return toReturn;
 };
 //Resolve a dependency path
 const pathResolve = (dir: string, payloadDir: string): string => {
   const res = doesInclude(dir);
   dir = !res.includes
     ? path.resolve(payloadDir, dir)
-    : dir
-        .split("/")
-        .map((char) => (pathAlias.get(char) ? pathAlias.get(char) : char))
-        .join(path.sep);
+    : //@ts-ignore
+      dir.replace(res.alias, pathAlias.get(res.alias));
   if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
     const contents: string[] = fs.readdirSync(dir);
     loop: for (let content of contents) {
@@ -141,10 +130,7 @@ const pathResolve = (dir: string, payloadDir: string): string => {
       }
     }
   }
-
   result = result || dir;
-  console.log({ result });
-
   return result;
 };
 
@@ -179,8 +165,6 @@ const extractImports = async (
     const templateCode: string =
       parsedCode.querySelector("template")?.innerHTML.trim() || "";
     const components: string[] = getComponents(templateCode);
-    console.log({ components });
-
     const contents: string[] = flattenDirectory(componentDir);
     if (components.length > 0 && contents.length > 0)
       for (let content of contents) {
@@ -198,8 +182,6 @@ const extractImports = async (
           });
           if (!isPresent) {
             //Only n is required hence the other are given default random values
-            console.log({ content });
-
             statements.push({
               d: 0,
               e: 0,
@@ -233,7 +215,6 @@ const crawlViewDecorator = (): [Function, Function] => {
       return returnVal;
     } else {
       const dependencies = await extractImports(baseString);
-
       const dependencyGraph: Jtype.dependencyGraph = {
         bareImports: [],
         moduleImports: [],
@@ -312,7 +293,6 @@ export default async function (
   }
   rootSRC = src[0];
   src = src[0];
-  pathAlias.set("@", rootSRC);
   createPathAlias(directory);
   const slug = fs.existsSync(path.join(src, "views"))
     ? path.join(src, "views")
@@ -335,6 +315,5 @@ export default async function (
     });
     resetTrail();
   }
-  console.log(viewGraphs);
   return viewGraphs;
 }
