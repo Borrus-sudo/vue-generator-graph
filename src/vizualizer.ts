@@ -29,7 +29,6 @@ export default function (
       start = "[[";
       end = "]]";
     }
-
     if (node.graph != "circularReference" && node.graph != "none") {
       for (let module of node.graph.moduleImports) {
         currentScript += `\t ${node.name}-->${module.name} \n`;
@@ -40,19 +39,8 @@ export default function (
           }
         }
       }
-      // currentScript += `\t ${node.name}${start}"${node.name}<br> ${
-      //   node.name != "App.vue"
-      //     ? "<u>BareImports</u> <br>"
-      //     : "<u>Plugins</u> <br>"
-      // }${[...new Set(node.graph.bareImports.map((elem) => elem.name))].join(
-      //   "<br>"
-      // )}"${end} \n`;
-      if (node.graph.baseString) {
-        // currentScript += `\t click ${node.name} callback "Tool tip" \n`;
-      }
     }
     currentScript += `\t ${node.name}${start}${node.name}${end} \n`;
-
     return currentScript;
   };
   const mds: string[] = [];
@@ -62,7 +50,5 @@ export default function (
       ? mds.push(mermaidMD)
       : mds.push(mermaidMD + `\t ${viewGraph.name}`);
   }
-  console.log(mds[0]);
-
   return mds;
 }
