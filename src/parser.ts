@@ -245,6 +245,7 @@ const crawlViewDecorator = (): [Function, Function] => {
               )
             ) {
               const parts = dir.split(path.sep);
+              //for supporting stuff like @vue/compiler-sfc so not only compiler-sfc shows up
               if (parts[parts.length - 1].startsWith("@")) {
                 base = parts[parts.length - 1] + "/" + base;
               }
