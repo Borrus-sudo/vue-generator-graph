@@ -17,15 +17,22 @@ export default function getWebviewContent(src: Uri, scripts: string[]): string {
 </head>
 
 <body>
-  <script>var callback=function (){ console.log('Crap called')}</script>    
   <h1>Graph 📊</h1>
+  <script>function testClick(){console.log("Clicked")}</script>
   <br>
   <br>
   ${scriptsInHTML}
- 
-  <script src=${src}></script>
-</body>
-
+  <script src="${src}"></script>
+  <script>
+   const vscode = acquireVsCodeApi();
+   function openFile(call){
+    vscode.postMessage({
+      command: 'alert',
+      text: '🐛  on line ' + call
+    })
+  }
+  </script>
+ </body>
 </html>
   `;
 }

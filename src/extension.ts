@@ -42,6 +42,13 @@ export async function activate(context: vscode.ExtensionContext) {
           builtFile,
           visualize(viewGraphs)
         );
+        panel.webview.onDidReceiveMessage(
+          (message) => {
+            vscode.window.showErrorMessage(message.text);
+          },
+          undefined,
+          context.subscriptions
+        );
       } else {
         vscode.window.showErrorMessage("Please open a workspace");
       }

@@ -7,9 +7,5 @@ mermaid.initialize({
         htmlLabels: true,
         curve: "basis",
     },
-    mermaid: {
-        callback: function(id) {
-            console.log(id);
-        }
-    }
+    securityLevel: "loose"
 });
