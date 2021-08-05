@@ -7,4 +7,5 @@ Starring the repo will support me to do more open source
 ![Feature](https://github.com/Borrus-sudo/vue-generator-graph/blob/master/gifs/Example1.gif)
 Evan you's https://sfc.vuejs.org vizualized.
 # Roadmap 
-Add support for opening files on clicking the corresponding box in graph
+- Add support for opening files on clicking the corresponding box in graph
+- Add a save as svg,png,jpeg option in the extension
