@@ -92,7 +92,6 @@ const createPathAlias = (dir: string): void => {
           val.endsWith("/") ? val : val + "/"
         );
         aliases.add(key.endsWith("*") ? path.parse(key).dir + "/" : key);
-        console.log(pathAlias);
       });
     }
   }
