@@ -1,7 +1,6 @@
 # vue-generator-graph
 Analyzes you vuejs app and creates a graph for the app by analyzing import relations with support for auto import components and path aliases. 
 <br/>
-Starring the repo will support me to do more open source
 
 # Features
 - 🔍 Scans your vue app and creates a flowchart based on it
@@ -17,3 +16,6 @@ Evan you's https://sfc.vuejs.org vizualized.
 # Roadmap 
 - Add support for opening files on clicking the corresponding box in graph
 - Add a save as svg,png,jpeg option in the extension
+
+# Support me
+ I am a high school student doing open sourcing. Starring this repo will encourage me to do more of this! Checkout my other projects as well and consider starring it if you like it!
