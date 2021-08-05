@@ -24,7 +24,8 @@ export async function activate(context: vscode.ExtensionContext) {
         const viewGraphs:
           | Array<{
               name: string;
-              graph: "none" | dependencyGraph;
+              graph: "none" | dependencyGraph | "circularReference";
+              baseString: string;
             }>
           | undefined = await parser(mainFolder);
         if (!viewGraphs) {

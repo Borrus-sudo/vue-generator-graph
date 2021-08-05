@@ -225,7 +225,6 @@ const crawlViewDecorator = (): [Function, Function] => {
       const dependencyGraph: Jtype.dependencyGraph = {
         bareImports: [],
         moduleImports: [],
-        baseString,
       };
       const { dir: payloadDir, base: payloadBase } = path.parse(baseString);
       trail.push(payloadBase);
@@ -260,17 +259,20 @@ const crawlViewDecorator = (): [Function, Function] => {
                   dependencyGraph.moduleImports.push({
                     name: base,
                     graph: subDependencyGraph,
+                    baseString: dependencyPath,
                   });
                 } else {
                   dependencyGraph.moduleImports.push({
                     name: base,
                     graph: "none",
+                    baseString: dependencyPath,
                   });
                 }
               } else {
                 dependencyGraph.moduleImports.push({
                   name: base,
                   graph: "circularReference",
+                  baseString: dependencyPath,
                 });
               }
             }
@@ -293,7 +295,12 @@ const crawlViewDecorator = (): [Function, Function] => {
 export default async function (
   directory: string
 ): Promise<
-  { name: string; graph: Jtype.dependencyGraph | "none" }[] | undefined
+  | {
+      name: string;
+      graph: Jtype.dependencyGraph | "none" | "circularReference";
+      baseString: string;
+    }[]
+  | undefined
 > {
   let src: string[] | string = findContent(directory, "src");
   if (src === "404") {
@@ -311,6 +318,7 @@ export default async function (
   const viewGraphs: Array<{
     name: string;
     graph: Jtype.dependencyGraph | "none";
+    baseString: string;
   }> = [];
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
@@ -320,8 +328,11 @@ export default async function (
     viewGraphs.push({
       name: view.split(src + "\\")[1],
       graph: ast ? ast : "none",
+      baseString: view,
     });
     resetTrail();
   }
+  console.log(viewGraphs);
+
   return viewGraphs;
 }

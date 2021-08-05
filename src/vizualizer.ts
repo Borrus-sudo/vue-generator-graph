@@ -1,14 +1,15 @@
 import { dependencyGraph } from "./types";
-
 export default function (
   viewGraphs: Array<{
     name: string;
-    graph: "none" | dependencyGraph;
+    graph: "none" | dependencyGraph | "circularReference";
+    baseString: string;
   }>
 ): string[] {
   const createNodeGraph = (node: {
     name: string;
     graph: dependencyGraph | "none" | "circularReference";
+    baseString: string;
   }): string => {
     let currentScript: string = ``;
     let start: string = "(";
@@ -17,7 +18,7 @@ export default function (
       node.name.includes("store") ||
       (node.graph !== "none" &&
         node.graph !== "circularReference" &&
-        node.graph.baseString.includes("store"))
+        node.baseString.includes("store"))
     ) {
       start = "[(";
       end = ")]";
@@ -28,25 +29,26 @@ export default function (
     ) {
       start = "[[";
       end = "]]";
-      node.name = node.name.includes("pages")
-        ? node.name.split("pages\\")[1]
-        : node.name.includes("views")
-        ? node.name.split("views\\")[1]
-        : node.name;
     }
+    let nodeID: string = node.baseString.replace(/\\/g, "-");
     if (node.graph != "circularReference" && node.graph != "none") {
       for (let modulePkg of node.graph.moduleImports) {
-        currentScript += `\t ${node.name}-->${modulePkg.name} \n`;
+        currentScript += `\t ${nodeID}-->${modulePkg.baseString.replace(
+          /\\/g,
+          "-"
+        )}(${modulePkg.name}) \n`;
         const result = createNodeGraph(modulePkg).split("\n");
         for (let content of result) {
           if (!currentScript.includes(content)) {
+            currentScript += `${content} \n`;
+          } else if (!content.includes("-->")) {
             currentScript += `${content} \n`;
           }
         }
       }
     }
-    currentScript += `\t ${node.name}${start}${node.name}${end} \n`;
-    currentScript += `\t click ${node.name} call openFile(); \n`;
+    currentScript += `\t ${nodeID}${start}${node.name}${end} \n`;
+    currentScript += `\t click ${nodeID} call openFile(); \n`;
     return currentScript;
   };
   const mds: string[] = [];
@@ -54,6 +56,6 @@ export default function (
     const mermaidMD = `graph LR \n` + createNodeGraph(viewGraph);
     mds.push(mermaidMD);
   }
-  console.log(mds[2]);
+  console.log(mds[0]);
   return mds;
 }

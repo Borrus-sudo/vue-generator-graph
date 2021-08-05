@@ -1,5 +1,4 @@
 import mermaid from "mermaid";
-
 mermaid.initialize({
     theme: "default",
     flowchart: {
@@ -7,5 +6,5 @@ mermaid.initialize({
         htmlLabels: true,
         curve: "basis",
     },
-    securityLevel: "loose"
+    securityLevel: "loose",
 });
