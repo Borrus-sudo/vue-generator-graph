@@ -79,12 +79,20 @@ const createPathAlias = (dir: string): void => {
       typeof content.compilerOptions.paths === "object"
     ) {
       Object.keys(content.compilerOptions.paths).forEach((key) => {
-        const val: string = path.resolve(
+        let val: string = path.resolve(
           basePath,
           content.compilerOptions.paths[key][0] || ""
         );
-        pathAlias.set(key, val.endsWith("/") ? val : val + "/");
-        aliases.add(key);
+        const { name, dir } = path.parse(val);
+        if (name === "*") {
+          val = dir;
+        }
+        pathAlias.set(
+          key.endsWith("*") ? path.parse(key).dir + "/" : key,
+          val.endsWith("/") ? val : val + "/"
+        );
+        aliases.add(key.endsWith("*") ? path.parse(key).dir + "/" : key);
+        console.log(pathAlias);
       });
     }
   }
