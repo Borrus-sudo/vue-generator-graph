@@ -19,4 +19,4 @@ My website https://jsgandalf.netlify.app vizualized!
 - Add a `save as` svg, png, jpeg option in the extension
 
 # Support me
- I am a high school student doing open sourcing. Starring the repo will encourage me to do more of this! Checkout my other projects as well and consider starring if you like it !
+ I am a high school student doing open sourcing. Starring the repo will encourage me to do more of this! Checkout my other projects as well and consider starring if you like it!
