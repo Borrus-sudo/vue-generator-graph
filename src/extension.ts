@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { join } from "path";
+import { join, normalize } from "path";
 import parser from "./parser";
 import visualize from "./vizualizer";
 import getWebviewContent from "./getWebview";
@@ -43,7 +43,7 @@ export async function activate(context: vscode.ExtensionContext) {
         );
         panel.webview.onDidReceiveMessage(
           async (message) => {
-            const directory: string = message.text.replace(/\//g, "\\");
+            const directory: string = normalize(message.text);
             console.log({ directory });
             if (existsSync(directory)) {
               let uri = vscode.Uri.file(directory);

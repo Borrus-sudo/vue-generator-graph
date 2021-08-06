@@ -1,5 +1,5 @@
 import {  node } from "./types";
-import { resolve } from "path";
+import { normalize } from "path";
 export default function (viewGraphs: node[]): string[] {
   const createNodeGraph = (node: node): string => {
     let currentScript: string = ``;
@@ -21,10 +21,10 @@ export default function (viewGraphs: node[]): string[] {
       start = "[[";
       end = "]]";
     }
-    let nodeID: string = resolve(node.baseString).replace(/\\/g, "/");
+    let nodeID: string = normalize(node.baseString).replace(/\\/g, "/");
     if (node.graph != "circularReference" && node.graph != "none") {
       for (let modulePkg of node.graph.moduleImports) {
-        currentScript += `\t ${nodeID}-->${resolve(
+        currentScript += `\t ${nodeID}-->${normalize(
           modulePkg.baseString
         ).replace(/\\/g, "/")}(${modulePkg.name}) \n`;
         const result = createNodeGraph(modulePkg).split("\n");

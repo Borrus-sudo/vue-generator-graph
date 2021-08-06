@@ -109,7 +109,7 @@ const doesInclude = (dir: string): { includes: boolean; alias: string } => {
   return toReturn;
 };
 //Resolve a dependency path
-const pathResolve = (dir: string, payloadDir: string): string => {
+const normalizePath = (dir: string, payloadDir: string): string => {
   const res = doesInclude(dir);
   dir = !res.includes
     ? path.resolve(payloadDir, dir)
@@ -130,7 +130,8 @@ const pathResolve = (dir: string, payloadDir: string): string => {
   if (!mainDetails.ext && fs.existsSync(mainDetails.dir)) {
     const contents = fs.readdirSync(mainDetails.dir);
     loop: for (let content of contents) {
-      const contentDetails = path.parse(path.join(mainDetails.dir, content));
+      const contentPath = path.join(mainDetails.dir, content);
+      const contentDetails = path.parse(contentPath);
       if (contentDetails.name === mainDetails.name && contentDetails.ext) {
         result = dir + contentDetails.ext;
         break loop;
@@ -217,9 +218,8 @@ const crawlViewDecorator = (): [Function, Function] => {
     ) {
       return undefined;
     }
-    const returnVal = cache.get(baseString);
-    if (returnVal) {
-      return returnVal;
+    // const returnVal = cache.get(baseString);
+    if (false) {
     } else {
       const dependencies = await extractImports(baseString);
       const dependencyGraph: Graph.dependencyGraph = {
@@ -233,7 +233,7 @@ const crawlViewDecorator = (): [Function, Function] => {
           trail.splice(trail.indexOf(payloadBase) + 1);
           let subDependencyGraph: Graph.dependencyGraph | undefined;
           if (dependency.n) {
-            const dependencyPath = pathResolve(dependency.n, payloadDir);
+            const dependencyPath = normalizePath(dependency.n, payloadDir);
             let { base, dir } = path.parse(dependencyPath);
             if (
               !(
