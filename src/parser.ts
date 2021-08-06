@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import * as path from "path";
-import * as Jtype from "./types";
+import * as Graph from "./types";
 import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
 import { paramCase } from "change-case";
@@ -23,7 +23,7 @@ const flattenDirectory = (dir: string): string[] => {
 
 //Find the source folder
 let rootSRC: string = "";
-const findContent: Jtype.findSRCType = (
+const findContent: Graph.findSRCType = (
   baseURL: string,
   name: string
 ): string[] | "404" => {
@@ -210,7 +210,7 @@ const crawlViewDecorator = (): [Function, Function] => {
   const trail: string[] = [];
   const crawlView = async (
     baseString: string
-  ): Promise<Jtype.dependencyGraph | undefined> => {
+  ): Promise<Graph.dependencyGraph | undefined> => {
     if (
       baseString.endsWith("router" + path.sep + "index.ts") ||
       baseString.endsWith("router" + path.sep + "index.js")
@@ -222,7 +222,7 @@ const crawlViewDecorator = (): [Function, Function] => {
       return returnVal;
     } else {
       const dependencies = await extractImports(baseString);
-      const dependencyGraph: Jtype.dependencyGraph = {
+      const dependencyGraph: Graph.dependencyGraph = {
         bareImports: [],
         moduleImports: [],
       };
@@ -231,7 +231,7 @@ const crawlViewDecorator = (): [Function, Function] => {
       if (dependencies) {
         for (let dependency of dependencies) {
           trail.splice(trail.indexOf(payloadBase) + 1);
-          let subDependencyGraph: Jtype.dependencyGraph | undefined;
+          let subDependencyGraph: Graph.dependencyGraph | undefined;
           if (dependency.n) {
             const dependencyPath = pathResolve(dependency.n, payloadDir);
             let { base, dir } = path.parse(dependencyPath);
@@ -294,14 +294,7 @@ const crawlViewDecorator = (): [Function, Function] => {
 //Function to put all the pieces together
 export default async function (
   directory: string
-): Promise<
-  | {
-      name: string;
-      graph: Jtype.dependencyGraph | "none" | "circularReference";
-      baseString: string;
-    }[]
-  | undefined
-> {
+): Promise<Graph.node[] | undefined> {
   let src: string[] | string = findContent(directory, "src");
   if (src === "404") {
     return;
@@ -315,16 +308,12 @@ export default async function (
     ? path.join(src, "pages")
     : "";
   const views = flattenDirectory(slug);
-  const viewGraphs: Array<{
-    name: string;
-    graph: Jtype.dependencyGraph | "none";
-    baseString: string;
-  }> = [];
+  const viewGraphs: Graph.node[] = [];
   await lexer.init;
   const [crawler, resetTrail] = crawlViewDecorator();
   views.push(path.resolve(src, "./App.vue"));
   for (let view of views) {
-    const ast: Jtype.dependencyGraph | undefined = await crawler(view);
+    const ast: Graph.dependencyGraph | undefined = await crawler(view);
     viewGraphs.push({
       name: view.split(src + "\\")[1],
       graph: ast ? ast : "none",
@@ -332,7 +321,5 @@ export default async function (
     });
     resetTrail();
   }
-  console.log(viewGraphs);
-
   return viewGraphs;
 }

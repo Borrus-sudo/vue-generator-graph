@@ -24,10 +24,10 @@ export default function getWebviewContent(src: Uri, scripts: string[]): string {
   <script src="${src}"></script>
   <script>
     const vscode = acquireVsCodeApi();
-    function openFile(call) {
+    function openFile(id) {
       vscode.postMessage({
         command: "alert",
-        text: "🐛  on line " + call,
+        text: id,
       });
     };
   </script>

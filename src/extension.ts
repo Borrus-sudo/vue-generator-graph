@@ -1,10 +1,12 @@
 import * as vscode from "vscode";
-import * as path from "path";
+import { join } from "path";
 import parser from "./parser";
 import visualize from "./vizualizer";
 import getWebviewContent from "./getWebview";
-import { dependencyGraph } from "./types";
-
+import { node } from "./types";
+import { existsSync } from "fs";
+const bugMessage =
+  "If a bug is found, feel free to report it at https://github.com/Borrus-sudo/vue-generator-graph/issues";
 export async function activate(context: vscode.ExtensionContext) {
   let panel: vscode.WebviewPanel | undefined = undefined;
   context.subscriptions.push(
@@ -16,26 +18,22 @@ export async function activate(context: vscode.ExtensionContext) {
         vscode.ViewColumn.One,
         { enableScripts: true }
       );
+
       if (vscode.workspace.workspaceFolders) {
         const folders = vscode.workspace.workspaceFolders;
         let mainFolder: string = "";
         mainFolder = folders[0].uri.path;
         mainFolder = mainFolder.replace(mainFolder[0], "");
-        const viewGraphs:
-          | Array<{
-              name: string;
-              graph: "none" | dependencyGraph | "circularReference";
-              baseString: string;
-            }>
-          | undefined = await parser(mainFolder);
+        const viewGraphs: node[] | undefined = await parser(mainFolder);
         if (!viewGraphs) {
           vscode.window.showErrorMessage(
-            " Neither `src` directory nor `pages` directory wasfound."
+            "Neither `src` directory nor `pages` directory were found. " +
+              bugMessage
           );
           return;
         }
         const onDiskFilePath = vscode.Uri.file(
-          path.join(context.extensionPath, "dist", "index.js")
+          join(context.extensionPath, "dist", "index.js")
         );
         const builtFile: vscode.Uri =
           panel.webview.asWebviewUri(onDiskFilePath);
@@ -44,14 +42,25 @@ export async function activate(context: vscode.ExtensionContext) {
           visualize(viewGraphs)
         );
         panel.webview.onDidReceiveMessage(
-          (message) => {
-            vscode.window.showErrorMessage(message.text);
+          async (message) => {
+            const directory: string = message.text.replace(/\//g, "\\");
+            console.log({ directory });
+            if (existsSync(directory)) {
+              let uri = vscode.Uri.file(directory);
+              await vscode.window.showTextDocument(uri);
+            } else {
+              vscode.window.showErrorMessage(
+                `The directory ${directory} does not exist. Please check the import relation path. ${bugMessage}`
+              );
+            }
           },
           undefined,
           context.subscriptions
         );
       } else {
-        vscode.window.showErrorMessage("Please open a workspace");
+        vscode.window.showErrorMessage(
+          "Please open a workspace. " + bugMessage
+        );
       }
     })
   );

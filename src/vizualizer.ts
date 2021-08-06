@@ -1,16 +1,7 @@
-import { dependencyGraph } from "./types";
-export default function (
-  viewGraphs: Array<{
-    name: string;
-    graph: "none" | dependencyGraph | "circularReference";
-    baseString: string;
-  }>
-): string[] {
-  const createNodeGraph = (node: {
-    name: string;
-    graph: dependencyGraph | "none" | "circularReference";
-    baseString: string;
-  }): string => {
+import {  node } from "./types";
+import { resolve } from "path";
+export default function (viewGraphs: node[]): string[] {
+  const createNodeGraph = (node: node): string => {
     let currentScript: string = ``;
     let start: string = "(";
     let end: string = ")";
@@ -30,18 +21,15 @@ export default function (
       start = "[[";
       end = "]]";
     }
-    let nodeID: string = node.baseString.replace(/\\/g, "-");
+    let nodeID: string = resolve(node.baseString).replace(/\\/g, "/");
     if (node.graph != "circularReference" && node.graph != "none") {
       for (let modulePkg of node.graph.moduleImports) {
-        currentScript += `\t ${nodeID}-->${modulePkg.baseString.replace(
-          /\\/g,
-          "-"
-        )}(${modulePkg.name}) \n`;
+        currentScript += `\t ${nodeID}-->${resolve(
+          modulePkg.baseString
+        ).replace(/\\/g, "/")}(${modulePkg.name}) \n`;
         const result = createNodeGraph(modulePkg).split("\n");
         for (let content of result) {
-          if (!currentScript.includes(content)) {
-            currentScript += `${content} \n`;
-          } else if (!content.includes("-->")) {
+          if (!currentScript.includes(content) || !content.includes("-->")) {
             currentScript += `${content} \n`;
           }
         }
@@ -56,6 +44,5 @@ export default function (
     const mermaidMD = `graph LR \n` + createNodeGraph(viewGraph);
     mds.push(mermaidMD);
   }
-  console.log(mds[0]);
   return mds;
 }
