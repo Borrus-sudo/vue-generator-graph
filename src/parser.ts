@@ -113,8 +113,7 @@ const normalizePath = (dir: string, payloadDir: string): string => {
   const res = doesInclude(dir);
   dir = !res.includes
     ? path.resolve(payloadDir, dir)
-    : //@ts-ignore
-      dir.replace(res.alias, pathAlias.get(res.alias));
+    : dir.replace(res.alias, pathAlias.get(res.alias) || "");
   if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
     const contents: string[] = fs.readdirSync(dir);
     loop: for (let content of contents) {
@@ -130,8 +129,12 @@ const normalizePath = (dir: string, payloadDir: string): string => {
   if (!mainDetails.ext && fs.existsSync(mainDetails.dir)) {
     const contents = fs.readdirSync(mainDetails.dir);
     loop: for (let content of contents) {
-      const contentPath = path.join(mainDetails.dir, content);
-      const contentDetails = path.parse(contentPath);
+      const dotIndex = content.indexOf(".");
+      const contentDetails = {
+        name: content.slice(0, dotIndex),
+        ext: content.slice(dotIndex),
+      };
+      console.log(contentDetails);
       if (contentDetails.name === mainDetails.name && contentDetails.ext) {
         result = dir + contentDetails.ext;
         break loop;
