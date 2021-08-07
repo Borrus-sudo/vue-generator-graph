@@ -24,8 +24,8 @@ export async function activate(context: vscode.ExtensionContext) {
         let mainFolder: string = "";
         mainFolder = folders[0].uri.path;
         mainFolder = mainFolder.replace(mainFolder[0], "");
-        const viewGraphs: node[] | undefined = await parser(mainFolder);
-        if (!viewGraphs) {
+        const ctx: node[] | undefined = await parser(mainFolder);
+        if (!ctx) {
           vscode.window.showErrorMessage(
             "Neither `src` directory nor `pages` directory were found. " +
               bugMessage
@@ -39,7 +39,7 @@ export async function activate(context: vscode.ExtensionContext) {
           panel.webview.asWebviewUri(onDiskFilePath);
         panel.webview.html = getWebviewContent(
           builtFile,
-          visualize(viewGraphs)
+          visualize(ctx)
         );
         panel.webview.onDidReceiveMessage(
           async (message) => {
