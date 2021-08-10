@@ -40,11 +40,9 @@ export async function activate(context: vscode.ExtensionContext) {
         panel.webview.html = getWebviewContent(builtFile, visualize(ctx));
         panel.webview.onDidReceiveMessage(
           async (message) => {
-            console.log({ message });
             switch (message.command) {
               case "openFile":
                 const directory: string = normalize(message.text);
-                console.log({ directory });
                 if (existsSync(directory)) {
                   let uri = vscode.Uri.file(directory);
                   await vscode.window.showTextDocument(uri);
