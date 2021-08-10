@@ -2,8 +2,7 @@ import { Uri } from "vscode";
 export default function getWebviewContent(src: Uri, scripts: string[]): string {
   let scriptsInHTML = "";
   for (let script of scripts) {
-    scriptsInHTML += "\n";
-    scriptsInHTML += `<pre class="mermaid">${script}</pre>`;
+    scriptsInHTML += `<pre class="mermaid">${script}</pre> \n`;
   }
   return `
 <!DOCTYPE html>
