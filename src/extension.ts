@@ -37,21 +37,38 @@ export async function activate(context: vscode.ExtensionContext) {
         );
         const builtFile: vscode.Uri =
           panel.webview.asWebviewUri(onDiskFilePath);
-        panel.webview.html = getWebviewContent(
-          builtFile,
-          visualize(ctx)
-        );
+        panel.webview.html = getWebviewContent(builtFile, visualize(ctx));
         panel.webview.onDidReceiveMessage(
           async (message) => {
-            const directory: string = normalize(message.text);
-            console.log({ directory });
-            if (existsSync(directory)) {
-              let uri = vscode.Uri.file(directory);
-              await vscode.window.showTextDocument(uri);
-            } else {
-              vscode.window.showErrorMessage(
-                `The directory ${directory} does not exist. Please check the import relation path. ${bugMessage}`
-              );
+            console.log({ message });
+            switch (message.command) {
+              case "openFile":
+                const directory: string = normalize(message.text);
+                console.log({ directory });
+                if (existsSync(directory)) {
+                  let uri = vscode.Uri.file(directory);
+                  await vscode.window.showTextDocument(uri);
+                } else {
+                  vscode.window.showErrorMessage(
+                    `The directory ${directory} does not exist. Please check the import relation path. ${bugMessage}`
+                  );
+                }
+                break;
+              case "svgContent":
+                const payloadText = message.text;
+                const wsEditor = new vscode.WorkspaceEdit();
+                const filePath = vscode.Uri.file(join(mainFolder, "graph.svg"));
+                wsEditor.deleteFile(filePath, { ignoreIfNotExists: true });
+                wsEditor.createFile(filePath, { overwrite: true });
+                const origin = new vscode.Position(0, 0);
+                wsEditor.insert(filePath, origin, payloadText);
+                vscode.workspace.applyEdit(wsEditor);
+                vscode.window.showInformationMessage(
+                  `Graph saved in Graph.svg file in the root of the folder.`
+                );
+                break;
+              default:
+                break;
             }
           },
           undefined,

@@ -134,7 +134,6 @@ const normalizePath = (dir: string, payloadDir: string): string => {
         name: content.slice(0, dotIndex),
         ext: content.slice(dotIndex),
       };
-      console.log(contentDetails);
       if (contentDetails.name === mainDetails.name && contentDetails.ext) {
         result = dir + contentDetails.ext;
         break loop;

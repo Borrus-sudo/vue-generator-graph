@@ -20,16 +20,23 @@ export default function getWebviewContent(src: Uri, scripts: string[]): string {
   <h1>Graph 📊</h1>
   <br>
   <br>
+  <button onclick="generateSvg()">Generate SVG</button>
+  <br>
+  <br>
   ${scriptsInHTML}
   <script src="${src}"></script>
   <script>
     const vscode = acquireVsCodeApi();
     function openFile(id) {
       vscode.postMessage({
-        command: "alert",
+        command: "openFile",
         text: id,
       });
     };
+    function generateSvg() {
+      const elems=Array.from(document.getElementsByClassName("mermaid")).map(elem=>elem.innerHTML).join(" ");
+      vscode.postMessage({command:"svgContent",text:elems});
+    }
   </script>
 </body>
 
