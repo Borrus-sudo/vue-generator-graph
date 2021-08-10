@@ -34,7 +34,7 @@ export default function getWebviewContent(src: Uri, scripts: string[]): string {
       });
     };
     function generateSvg() {
-      const elems=Array.from(document.getElementsByClassName("mermaid")).map(elem=>elem.innerHTML).join(" ");
+      const elems="<svg>" + Array.from(document.getElementsByClassName("mermaid")).map(elem=>"<g>"+elem.innerHTML+"</g>").join(" ") + "</svg>";
       vscode.postMessage({command:"svgContent",text:elems});
     }
   </script>
