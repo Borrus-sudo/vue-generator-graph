@@ -1,6 +1,14 @@
 import { Uri } from "vscode";
 export default function getWebviewContent(src: Uri, scripts: string[]): string {
   let scriptsInHTML = "";
+  const buttonStyles = `
+  padding:7.5px 5px;
+  margin:0;
+  background-color:#005998;
+  color:white;
+  border:none;
+  cursor:pointer;
+  `;
   for (let script of scripts) {
     scriptsInHTML += `<pre class="mermaid">${script}</pre> \n`;
   }
@@ -19,7 +27,7 @@ export default function getWebviewContent(src: Uri, scripts: string[]): string {
   <h1>Graph 📊</h1>
   <br>
   <br>
-  <button onclick="generateSvg()">Generate SVG</button>
+  <button style="${buttonStyles}" onclick="generateSvg()">Generate SVG</button>
   <br>
   <br>
   ${scriptsInHTML}
