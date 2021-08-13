@@ -1,6 +1,8 @@
-# vue-generator-graph
-Analyzes your vuejs app and creates a graph by analyzing import relations with support for auto import components and path aliases! 
-<br/>
+<p align="center">
+ <img width="100px" src="https://api.iconify.design/flat-ui:graph.svg" align="center" alt="Hero Graph Image" />
+ <h1 align="center"> vue-generator-graph </h1>
+ <p align="center"> Analyzes your vuejs app and creates a dynamic graph by analyzing import relations </p>
+</p>
 
 # Features
 - 🔍 Scans your Vue app and creates a flowchart based on it
