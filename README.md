@@ -1,5 +1,5 @@
 <p align="center">
- <img width="100px" src="https://api.iconify.design/flat-ui:graph.svg" align="center" alt="Hero Graph Image" />
+ <img width="100px" src="https://github.com/Borrus-sudo/vue-generator-graph/blob/master/gifs/hero.png" align="center" alt="Hero Graph Image" />
  <h1 align="center"> vue-generator-graph </h1>
  <p align="center"> Analyzes your vuejs app and creates a dynamic graph by analyzing import relations </p>
 </p>

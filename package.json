@@ -3,6 +3,7 @@
     "displayName": "vue-generator-graph",
     "description": "An app which will generate a graph of your entire vue application",
     "version": "0.0.1",
+    "publisher": "JSGandalf",
     "engines": {
         "vscode": "^1.55.0"
     },
@@ -14,13 +15,11 @@
     ],
     "main": "./dist/extension.js",
     "contributes": {
-        "commands": [
-            {
-                "command": "visualize.start",
-                "title": "Vizualize your vue app 😉",
-                "category": "Vizualizer"
-            }
-        ]
+        "commands": [{
+            "command": "visualize.start",
+            "title": "Vizualize your vue app 😉",
+            "category": "Vizualizer"
+        }]
     },
     "scripts": {
         "vscode:prepublish": "yarn run package",
