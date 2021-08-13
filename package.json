@@ -4,6 +4,7 @@
     "description": "An app which will generate a graph of your entire vue application",
     "version": "0.0.1",
     "publisher": "JSGandalf",
+    "repository": "https://github.com/Borrus-sudo/vue-generator-graph",
     "engines": {
         "vscode": "^1.55.0"
     },
