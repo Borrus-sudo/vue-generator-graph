@@ -296,7 +296,7 @@ const crawlViewDecorator = (): [Function, Function] => {
 //Function to put all the pieces together
 export default async function (
   directory: string
-): Promise<Graph.node[] | undefined> {
+): Promise<Graph.node[] | undefined|string> {
   let src: string[] | string = findContent(directory, "src");
   if (src === "404") {
     return;
@@ -309,19 +309,24 @@ export default async function (
     : fs.existsSync(path.join(src, "pages"))
     ? path.join(src, "pages")
     : "";
-  const views = flattenDirectory(slug);
-  const viewGraphs: Graph.node[] = [];
-  await lexer.init;
-  const [crawler, resetTrail] = crawlViewDecorator();
-  views.push(path.resolve(src, "./App.vue"));
-  for (let view of views) {
-    const ast: Graph.dependencyGraph | undefined = await crawler(view);
-    viewGraphs.push({
-      name: view.split(src + "\\")[1],
-      graph: ast ? ast : "none",
-      baseString: view,
-    });
-    resetTrail();
+  if (slug) {
+    const views = flattenDirectory(slug);
+    const viewGraphs: Graph.node[] = [];
+    await lexer.init;
+    const [crawler, resetTrail] = crawlViewDecorator();
+    views.push(path.resolve(src, "./App.vue"));
+    for (let view of views) {
+      const ast: Graph.dependencyGraph | undefined = await crawler(view);
+      viewGraphs.push({
+        name: view.split(src + "\\")[1],
+        graph: ast ? ast : "none",
+        baseString: view,
+      });
+      resetTrail();
+    }
+    return viewGraphs;
   }
-  return viewGraphs;
+  else {
+    return "The directory views or pages does not exist in src directory!";
+  }
 }

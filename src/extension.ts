@@ -24,7 +24,11 @@ export async function activate(context: vscode.ExtensionContext) {
         let mainFolder: string = "";
         mainFolder = folders[0].uri.path;
         mainFolder = mainFolder.replace(mainFolder[0], "");
-        const ctx: node[] | undefined = await parser(mainFolder);
+        const ctx: node[] | undefined | string = await parser(mainFolder);
+        if (typeof ctx === "string") {
+          vscode.window.showErrorMessage(ctx + " " + bugMessage);
+          return;
+        }
         if (!ctx) {
           vscode.window.showErrorMessage(
             "Neither `src` directory nor `pages` directory were found. " +
