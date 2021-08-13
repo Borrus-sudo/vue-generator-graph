@@ -12,12 +12,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.commands.registerCommand("visualize.start", async () => {
       // Create and show a new webview
-      panel = vscode.window.createWebviewPanel(
-        "visualize",
-        "Generator Graph",
-        vscode.ViewColumn.One,
-        { enableScripts: true }
-      );
 
       if (vscode.workspace.workspaceFolders) {
         const folders = vscode.workspace.workspaceFolders;
@@ -31,11 +25,16 @@ export async function activate(context: vscode.ExtensionContext) {
         }
         if (!ctx) {
           vscode.window.showErrorMessage(
-            "Neither `src` directory nor `pages` directory were found. " +
-              bugMessage
+            "`src`directory were found. " + bugMessage
           );
           return;
         }
+        panel = vscode.window.createWebviewPanel(
+          "visualize",
+          "Generator Graph",
+          vscode.ViewColumn.One,
+          { enableScripts: true }
+        );
         const onDiskFilePath = vscode.Uri.file(
           join(context.extensionPath, "dist", "index.js")
         );

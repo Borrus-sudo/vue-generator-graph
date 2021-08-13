@@ -1,5 +1,5 @@
 <p align="center">
- <img src="https://github.com/Borrus-sudo/vue-generator-graph/blob/master/gifs/hero.png" align="center" alt="Hero Graph Image" />
+ <img src="https://raw.githubusercontent.com/Borrus-sudo/vue-generator-graph/master/gifs/hero.png" align="center" alt="Hero Graph Image" />
  <h1 align="center"> vue-generator-graph </h1>
  <p align="center"> Analyzes your vuejs app and creates a dynamic graph by analyzing import relations </p>
 </p>
@@ -12,9 +12,9 @@
 - 📊 Ship off the graph as an SVG file and use it in your README for giving first-time contributors a bird's eye view of your project 
 
 # Demo
-![Feature 1](https://github.com/Borrus-sudo/vue-generator-graph/blob/master/gifs/Example1.gif)
+![Feature 1](https://raw.githubusercontent.com/Borrus-sudo/vue-generator-graph/master/gifs/Example1.gif)
 Evan you's https://sfc.vuejs.org vizualized!
-![Feature 2](https://github.com/Borrus-sudo/vue-generator-graph/blob/master/gifs/Example2.gif)
+![Feature 2](https://raw.githubusercontent.com/Borrus-sudo/vue-generator-graph/master/gifs/Example2.gif)
 My website https://jsgandalf.netlify.app vizualized!
 
 # Roadmap 

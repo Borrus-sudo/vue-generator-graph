@@ -5,6 +5,7 @@ import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
 import { paramCase } from "change-case";
 import getComponents from "./revealComponents";
+import { off } from "process";
 
 //Find all the files from a given directory with search for nested folders
 const flattenDirectory = (dir: string): string[] => {
@@ -296,7 +297,7 @@ const crawlViewDecorator = (): [Function, Function] => {
 //Function to put all the pieces together
 export default async function (
   directory: string
-): Promise<Graph.node[] | undefined|string> {
+): Promise<Graph.node[] | undefined | string> {
   let src: string[] | string = findContent(directory, "src");
   if (src === "404") {
     return;
@@ -309,12 +310,13 @@ export default async function (
     : fs.existsSync(path.join(src, "pages"))
     ? path.join(src, "pages")
     : "";
-  if (slug) {
+  if (slug || fs.existsSync(path.resolve(src, "./App.vue"))) {
     const views = flattenDirectory(slug);
     const viewGraphs: Graph.node[] = [];
     await lexer.init;
     const [crawler, resetTrail] = crawlViewDecorator();
-    views.push(path.resolve(src, "./App.vue"));
+    if (fs.existsSync(path.resolve(src, "./App.vue")))
+      views.push(path.resolve(src, "./App.vue"));
     for (let view of views) {
       const ast: Graph.dependencyGraph | undefined = await crawler(view);
       viewGraphs.push({
@@ -325,8 +327,7 @@ export default async function (
       resetTrail();
     }
     return viewGraphs;
-  }
-  else {
-    return "The directory views or pages does not exist in src directory!";
+  } else {
+    return "The directory views or pages or App.vue does not exist in src directory!";
   }
 }
