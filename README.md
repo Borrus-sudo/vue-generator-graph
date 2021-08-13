@@ -1,6 +1,6 @@
 <p align="center">
- <img src="https://github.com/Borrus-sudo/vue-generator-graph/blob/master/gifs/hero.png" align="center" alt="Hero Graph Image" />
- <h1 align="center"> vue-generator-graph </h1>
+
+ <h1 align="center"> <img style="display:inline" src="https://github.com/Borrus-sudo/vue-generator-graph/blob/master/gifs/hero.png" align="center" alt="Hero Graph Image" /> vue-generator-graph </h1>
  <p align="center"> Analyzes your vuejs app and creates a dynamic graph by analyzing import relations </p>
 </p>
 
