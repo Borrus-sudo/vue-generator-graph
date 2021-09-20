@@ -11,6 +11,9 @@
 - 📁 Open files in your deeply nested folder structure using the graph 
 - 📊 Ship off the graph as an SVG file and use it in your README for giving first-time contributors a bird's eye view of your project 
 
+# Upvote on reddit
+https://www.reddit.com/r/vuejs/comments/prnozg/vuegeneratorgraph/?utm_source=share&utm_medium=web2x&context=3
+
 # Demo
 ![Feature 1](https://raw.githubusercontent.com/Borrus-sudo/vue-generator-graph/master/gifs/Example1.gif)
 Evan you's https://sfc.vuejs.org vizualized!
