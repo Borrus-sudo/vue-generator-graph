@@ -5,7 +5,6 @@ import * as lexer from "es-module-lexer";
 import { parse } from "node-html-parser";
 import { paramCase } from "change-case";
 import getComponents from "./revealComponents";
-import { off } from "process";
 
 //Find all the files from a given directory with search for nested folders
 const flattenDirectory = (dir: string): string[] => {
